@@ -1,0 +1,6 @@
+version: '3.9'
+services:
+  frontend-wasm:
+    build: ./
+    ports:
+      - "8090:80"
