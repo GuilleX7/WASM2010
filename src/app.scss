@@ -1,0 +1,14 @@
+.is-fullheight {
+  height: 100%;
+}
+
+.is-fullwidth {
+  width: 100%;
+}
+
+.is-text-ellipsable,
+.is-text-ellipsable > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
