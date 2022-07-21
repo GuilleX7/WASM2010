@@ -78,8 +78,12 @@ size_t retrieve_value(char const **lineptr, int *status, size_t max_value, int s
     }
 
     if (**lineptr == '0' && *(*lineptr + 1) == 'X') {
-        /* Hexadecimal */
+        /* Hexadecimal using 0x prefix */
         (*lineptr) += 2;
+        value = retrieve_value_hexadecimal(lineptr, status, max_value);
+    } else if (**lineptr == '$') {
+        /* Hexadecimal using $ prefix */
+        (*lineptr)++;
         value = retrieve_value_hexadecimal(lineptr, status, max_value);
     } else if (**lineptr == '0' && *(*lineptr + 1) == 'B') {
         /* Binary */
@@ -169,6 +173,8 @@ size_t retrieve_value_decimal(char const **lineptr, int *status, size_t max_valu
     if (**lineptr == '-') {
         negative = true;
         max_value = max_value / 2 + 1;
+        (*lineptr)++;
+    } else if (**lineptr == '+') {
         (*lineptr)++;
     }
 
