@@ -195,7 +195,7 @@ size_t retrieve_value_decimal(char const **lineptr, int *status, size_t max_valu
     }
 
     *status = (valid_characters) ? RETRIEVE_VALUE_OK : RETRIEVE_VALUE_INVALID;
-    return (negative) ? max_value - value : value;
+    return (negative) ? -value : value;
 }
 
 bool check_unsigned_add_wrap(size_t a, size_t b) {
