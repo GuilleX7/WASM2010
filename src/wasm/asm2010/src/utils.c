@@ -19,7 +19,7 @@ bool read_upper_line(char *line, size_t max_length, char const *const str, size_
     if (str[*offset] == '\n') {
         (*offset)++;
         return true;
-    } else if (str[*offset] == '\0') {
-      return false;
+    } else {
+        return false;
     }
 }

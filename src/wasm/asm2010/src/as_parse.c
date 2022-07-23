@@ -576,8 +576,8 @@ int as_parse_init(as_parse_info *pinfo, size_t max_sentences) {
         return -4;
     }
 
-    pinfo->machine_code = malloc(sizeof *pinfo->machine_code * max_sentences);
-    if (!pinfo->machine_code) {
+    pinfo->assembled_code = malloc(sizeof *pinfo->assembled_code * max_sentences);
+    if (!pinfo->assembled_code) {
         hash_table_free(&pinfo->equs_ht);
         trace_log_free(&pinfo->log);
         cs_ins_search_stop();
@@ -587,6 +587,7 @@ int as_parse_init(as_parse_info *pinfo, size_t max_sentences) {
 
     pinfo->parsing_line_index = 0;
     pinfo->sentence_index = 0;
+    pinfo->assembled_code_index = 0;
     pinfo->max_sentences = max_sentences;
     return 0;
 }
@@ -594,25 +595,29 @@ int as_parse_init(as_parse_info *pinfo, size_t max_sentences) {
 void as_parse_free(as_parse_info *pinfo) {
     size_t i = 0;
     hash_table_free(&pinfo->equs_ht);
-    for (i = 0; i < pinfo->sentence_index; i++) {
+    for (; i < pinfo->sentence_index; i++) {
         free_argument(&pinfo->sentences[i].arg_a);
         free_argument(&pinfo->sentences[i].arg_b);
     }
     trace_log_free(&pinfo->log);
     free(pinfo->sentences);
-    free(pinfo->machine_code);
+    free(pinfo->assembled_code);
 }
 
-int as_parse_source(as_parse_info *pinfo, char const *source) {
+int as_parse_source(as_parse_info *pinfo, char const *source, bool stop_on_error) {
     char line[AS_MAX_LINE_LENGTH + 1];
     size_t offset = 0;
     int status = AS_PARSE_OK;
     int nextStatus = AS_PARSE_OK;
 
-    while (status != AS_PARSE_ERROR && read_upper_line(line, AS_MAX_LINE_LENGTH + 1, source, &offset)) {
-		int nextStatus = as_parse_line(pinfo, line);
+    while (read_upper_line(line, AS_MAX_LINE_LENGTH + 1, source, &offset)) {
+		nextStatus = as_parse_line(pinfo, line);
         if (nextStatus > status) {
             status = nextStatus;
+        }
+        
+        if (stop_on_error && status == AS_PARSE_ERROR) {
+            break;
         }
 	}
 
@@ -621,7 +626,6 @@ int as_parse_source(as_parse_info *pinfo, char const *source) {
 
 int as_parse_line(as_parse_info *pinfo, char const *line) {
     char const **lineptr = &line;
-    trace_log_clear(&pinfo->log);
 
     /* Check lines */
     if (pinfo->parsing_line_index > AS_MAX_SOURCE_LINES) {
@@ -683,53 +687,59 @@ int as_parse_line(as_parse_info *pinfo, char const *line) {
     return AS_PARSE_OK;
 }
 
-int as_parse_assemble(as_parse_info *pinfo) {
+int as_parse_assemble(as_parse_info *pinfo, bool stop_on_error) {
     size_t i = 0;
     as_parse_sentence *sentence = { 0 };
-    unsigned short *bincode = { 0 };
+    as_parse_assembled_code *assembled_code = { 0 };
+    unsigned short machine_code = 0;
     size_t *value_ptr = { 0 };
     size_t value = 0;
 
-    trace_log_clear(&pinfo->log);
-
-    if (pinfo->sentence_index < 1) {
-        trace_log_printf(&pinfo->log, "[Error] at least one valid sentence is required\n");
-        return AS_PARSE_ERROR;
-    }
-
-    for (i = 0; i < pinfo->sentence_index; i++) {
+    for (; i < pinfo->sentence_index; i++) {
         sentence = &pinfo->sentences[i];
-        bincode = &pinfo->machine_code[i];
+        assembled_code = &pinfo->assembled_code[pinfo->assembled_code_index];
 
-        *bincode = ((unsigned short) sentence->instruction->opcode << 11);
+        machine_code = ((unsigned short) sentence->instruction->opcode << 11);
 
         if (sentence->arg_a.type == AS_ARGUMENT_TYPE_EQU) {
             value_ptr = hash_table_get(&pinfo->equs_ht, sentence->arg_a.value.equ_key);
             if (!value_ptr) {
-                trace_log_printf(&pinfo->log, "[Error] Equ '%s' of instruction '%s' at line %" PRI_SIZET " couldn't be resolved\n",
+                trace_log_printf(&pinfo->log, "[Error] equ '%s' of instruction '%s' at line %" PRI_SIZET " couldn't be resolved\n",
                     sentence->arg_a.value.equ_key, sentence->instruction->name, sentence->parsing_line_index);
-                return AS_PARSE_ERROR;
+                if (stop_on_error) {
+                    return AS_PARSE_ERROR;
+                } else {
+                    continue;
+                }
             } else {
                 value = *value_ptr;
             }
         } else {
             value = sentence->arg_a.value.inm;
         }
-        *bincode |= ((unsigned short) value & 0x1Fu) << 8;
+        machine_code |= ((unsigned short) value & 0x1Fu) << 8;
 
         if (sentence->arg_b.type == AS_ARGUMENT_TYPE_EQU) {
             value_ptr = hash_table_get(&pinfo->equs_ht, sentence->arg_b.value.equ_key);
             if (!value_ptr) {
-                trace_log_printf(&pinfo->log, "[Error] Equ '%s' of instruction '%s' at line %" PRI_SIZET " couldn't be resolved\n",
+                trace_log_printf(&pinfo->log, "[Error] equ '%s' of instruction '%s' at line %" PRI_SIZET " couldn't be resolved\n",
                     sentence->arg_b.value.equ_key, sentence->instruction->name, sentence->parsing_line_index);
-                return AS_PARSE_ERROR;
+                if (stop_on_error) {
+                    return AS_PARSE_ERROR;
+                } else {
+                    continue;
+                }
             } else {
                 value = *value_ptr;
             }
         } else {
             value = sentence->arg_b.value.inm;
         }
-        *bincode |= (unsigned short) value & 0xFFu;
+        machine_code |= (unsigned short) value & 0xFFu;
+
+        assembled_code->machine_code = machine_code;
+        assembled_code->parsing_line_index = sentence->parsing_line_index;
+        pinfo->assembled_code_index++;
     }
 
     return AS_PARSE_OK;

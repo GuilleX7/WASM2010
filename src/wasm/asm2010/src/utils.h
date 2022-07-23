@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 #ifndef bool
-#define bool int
+#define bool unsigned char
 #define true 1
 #define false 0
 #endif

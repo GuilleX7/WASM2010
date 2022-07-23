@@ -107,14 +107,6 @@ __attribute__((visibility("default")))
 void cs_microstep(cs2010 *cs);
 
 /**
- * @brief Performs a step, executing the current instruction
- *      and fetching the next
- * @param cs Pointer to CS2010 structure
-*/
-__attribute__((visibility("default")))
-void cs_step(cs2010 *cs);
-
-/**
  * @brief Performs a fullstep, which means:
  *      - If the machine state is in the middle of a
  *        microoperation, it will finish the remaining
@@ -127,8 +119,8 @@ void cs_fullstep(cs2010 *cs);
 
 /**
  * @brief Performs a blockstep, which means executing
- *      full instructions until a BRxx/JMP instruction
- *      is found
+ *      full instructions until a BRxx/JMP/CALL
+ *      instruction is found
  * @param cs Pointer to CS2010 structure
 */
 __attribute__((visibility("default")))
