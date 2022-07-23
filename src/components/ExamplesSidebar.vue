@@ -10,12 +10,12 @@
       <b-menu :activable="false">
         <b-menu-list label="Examples">
           <b-menu-item
-            v-for="(_, exampleFileName) in exampleFiles"
+            v-for="(exampleFile, exampleFileName) in exampleFiles"
             icon="file-document"
             class="is-text-ellipsable"
             :label="exampleFileName"
             :key="exampleFileName"
-            @click="onExampleClicked(exampleFileName)"
+            @click="$emit('load', exampleFileName, exampleFile)"
           ></b-menu-item>
         </b-menu-list>
       </b-menu>
@@ -24,7 +24,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue-demi';
+import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
   props: {
@@ -52,18 +52,6 @@ export default defineComponent({
     return {
       exampleFiles,
     };
-  },
-  methods: {
-    onExampleClicked(exampleFileName: string): void {
-      this.$buefy.dialog.confirm({
-        title: 'Loading example',
-        message: `Are you sure you want to load <b>${exampleFileName}</b>? You will lose your changes.`,
-        confirmText: 'Load',
-        type: 'is-danger',
-        hasIcon: true,
-        onConfirm: () => this.$emit('load', this.exampleFiles[exampleFileName]),
-      });
-    },
   },
 });
 </script>

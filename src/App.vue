@@ -1,9 +1,11 @@
 <template>
   <div class="is-flex has-background-white-bis">
     <div class="is-flex asm--column">
-      <Editor></Editor>
+      <Editor @export="openLoadAssembledCodeDialog"></Editor>
     </div>
-    <div class="is-flex asm--column"></div>
+    <div class="is-flex asm--column">
+      <Simulator :machineCode="loadedMachineCode"></Simulator>
+    </div>
   </div>
 </template>
 
@@ -24,42 +26,35 @@
 </style>
 
 <script lang="ts">
-import { mapActions, mapState } from 'pinia';
-import { TAsParseResult } from './wasm/asm2010';
-import { useWasmStore } from './store/wasmStore';
 import Vue from 'vue';
 import Editor from './components/Editor.vue';
+import Simulator from './components/Simulator.vue';
+import { loadAsm2010, TAsAssembledCode } from './wasm/asm2010';
 
 export default Vue.extend({
   data: () => ({
-    sourceAssembly: '',
-    outputMachineCode: '',
-    log: '',
+    loadedMachineCode: [] as number[],
   }),
-  computed: {
-    ...mapState(useWasmStore, {
-      isWasmLoaded: 'isLoaded',
-    }),
-    status(): string {
-      return this.isWasmLoaded ? 'Ready' : 'Loading...';
-    },
-  },
-  mounted() {
-    this.loadWasm();
+  async mounted() {
+    const loadingComponent = this.$buefy.loading.open({});
+    await loadAsm2010();  
+    loadingComponent.close();
   },
   methods: {
-    ...mapActions(useWasmStore, {
-      loadWasm: 'load',
-      assembleWasm: 'assemble',
-    }),
-    assemble() {
-      const result: TAsParseResult = this.assembleWasm(this.sourceAssembly);
-      this.outputMachineCode = result.machineCode
-        .map((machineCodeLine) => machineCodeLine.toString(16))
-        .join('\n');
-      this.log = result.log;
+    openLoadAssembledCodeDialog(assembledCode: TAsAssembledCode[]): void {
+      this.$buefy.dialog.confirm({
+        title: 'Load machine code',
+        message:
+          'Do you want to load new machine code? This will stop the current simulation.',
+        trapFocus: true,
+        onConfirm: () => {
+          this.loadedMachineCode = assembledCode.map(
+            ({ machineCode }) => machineCode
+          );
+        },
+      });
     },
   },
-  components: { Editor },
+  components: { Editor, Simulator },
 });
 </script>

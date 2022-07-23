@@ -69,13 +69,13 @@ typedef enum cs_instruction_idx cs_instruction_idx;
 
 /** @brief CS2010 instruction data */
 struct cs_instruction {
-  unsigned long signals[5];
-  cs_instruction_idx index;
   char *name;
   void (*stepper)(cs2010 *cs);
   void (*microstepper)(cs2010 *cs);
-  unsigned char opcode;
+  unsigned long signals[5];
+  cs_instruction_idx index;
   int format;
+  unsigned char opcode;
   bool exec;
 };
 typedef struct cs_instruction cs_instruction;

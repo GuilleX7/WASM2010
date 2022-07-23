@@ -36,30 +36,18 @@ bool cs_init(cs2010 *cs) {
 }
 
 void cs_hard_reset(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     cs_clear_memory(cs, CS_CLEAR_RAM | CS_CLEAR_ROM);
     cs_reset_registers(cs);
     cs->stopped = false;
 }
 
 void cs_soft_reset(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     cs->reg.pc = 0;
     cs->reg.sp = 0xFF;
     cs->stopped = false;
 }
 
 void cs_clear_memory(cs2010 *cs, unsigned char flags) {
-    if (!cs) {
-        return;
-    }
-
     if (flags & CS_CLEAR_ROM) {
         memset(cs->mem.rom, 0, CS_ROM_SIZE * sizeof *cs->mem.rom);
     }
@@ -69,10 +57,6 @@ void cs_clear_memory(cs2010 *cs, unsigned char flags) {
 }
 
 void cs_reset_registers(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     cs->reg.ac = 0;
     cs->reg.ir = 0;
     cs->reg.mar = 0;
@@ -94,7 +78,7 @@ void cs_reset_registers(cs2010 *cs) {
 int cs_load_and_check(cs2010 *cs, unsigned short *sentences, size_t sentences_length) {
     size_t i = 0;
     
-    if (!cs || !sentences) {
+    if (!sentences) {
         return CS_FAILED;
     }
     
@@ -102,7 +86,7 @@ int cs_load_and_check(cs2010 *cs, unsigned short *sentences, size_t sentences_le
         return CS_NOT_ENOUGH_ROM;
     }
 
-    for (i = 0; i < sentences_length; i++) {
+    for (; i < sentences_length; i++) {
         if (!cs_ins_list[CS_GET_OPCODE(sentences[i])].exec) {
             return CS_INVALID_INSTRUCTIONS;
         }
@@ -113,19 +97,11 @@ int cs_load_and_check(cs2010 *cs, unsigned short *sentences, size_t sentences_le
 }
 
 void cs_microfetch(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     cs->microop++;
     cs->reg.signals = cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].signals[cs->microop];
 }
 
 void cs_fetch(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     cs->microop = 0;
     cs->reg.ir = cs->mem.rom[cs->reg.pc];
     cs->reg.signals = cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].signals[cs->microop];
@@ -133,24 +109,14 @@ void cs_fetch(cs2010 *cs) {
 }
 
 void cs_microstep(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
     cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].microstepper(cs);
 }
 
 void cs_step(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
     cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].stepper(cs);
 }
 
 void cs_fullstep(cs2010 *cs) {
-    if (!cs) {
-        return;
-    }
-
     if (!cs->microop) {
         cs_step(cs);
     } else {
@@ -162,10 +128,6 @@ void cs_fullstep(cs2010 *cs) {
 
 void cs_blockstep(cs2010 *cs) {
     unsigned char opcode;
-
-    if (!cs) {
-        return;
-    }
 
     cs_fullstep(cs);
     opcode = CS_GET_OPCODE(cs->reg.ir);

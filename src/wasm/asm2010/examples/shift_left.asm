@@ -4,4 +4,4 @@ ROL R1
 ROL R1
 MOV R2, R1
 STOP
-	
+    

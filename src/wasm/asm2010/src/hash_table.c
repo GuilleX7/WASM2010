@@ -78,7 +78,7 @@ void hash_table_free(struct hash_table *hash_table) {
 	}
 
 	size = hash_sizes[hash_table->size_index];
-	for (i = 0; i < size; i++) {
+	for (; i < size; i++) {
 		if ((entry = hash_table->entries[i])) {
 			hash_table_free_entries(entry);
 		}
@@ -298,7 +298,7 @@ static void hash_table_rehash(struct hash_table *hash_table, size_t size_index) 
 	}
 
 	old_size = hash_sizes[hash_table->size_index];
-	for (i = 0; i < old_size; i++) {
+	for (; i < old_size; i++) {
 		entry = hash_table->entries[i];
 		while (entry) {
 			new_hash = hash_table_hash(size_index, entry->key);

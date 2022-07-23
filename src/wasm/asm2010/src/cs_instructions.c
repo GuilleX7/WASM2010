@@ -7,7 +7,7 @@
 #include "cs_instructions.h"
 
 #define CS_INS_DEFINE(index, name, opcode, format, exec, stepper, microstepper, fl1, fl2, fl3, fl4, fl5) \
-    {{fl1, fl2, fl3, fl4, fl5}, index, name, stepper, microstepper, opcode, format, exec}
+    {name, stepper, microstepper, {fl1, fl2, fl3, fl4, fl5}, index, format, opcode, exec}
 #define CS_INS_DEFINE_EMPTY {0}
 
 cs_instruction const cs_ins_list[] = {
@@ -223,7 +223,7 @@ bool cs_ins_search_start(void) {
         if (!hash_table_init(&ht)) {
             return false;
         }
-        for (i = 0; i < CS_INS_LEN; i++) {
+        for (; i < CS_INS_LEN; i++) {
             if (cs_ins_list[i].name) {
                 if (!hash_table_put(&ht, cs_ins_list[i].name, &i)) {
                 hash_table_free(&ht);
