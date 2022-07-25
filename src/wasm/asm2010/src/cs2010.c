@@ -57,11 +57,8 @@ void cs_clear_memory(cs2010 *cs, unsigned char flags) {
 }
 
 void cs_reset_registers(cs2010 *cs) {
-    cs->reg.ac = 0;
+    cs->reg.signals = CS_SIGNALS_NONE;
     cs->reg.ir = 0;
-    cs->reg.mar = 0;
-    cs->reg.mdr = 0;
-    cs->reg.pc = 0;
     cs->reg.r0 = 0;
     cs->reg.r1 = 0;
     cs->reg.r2 = 0;
@@ -70,9 +67,12 @@ void cs_reset_registers(cs2010 *cs) {
     cs->reg.r5 = 0;
     cs->reg.r6 = 0;
     cs->reg.r7 = 0;
-    cs->reg.sr = 0;
     cs->reg.sp = 0xFF;
-    cs->reg.signals = CS_SIGNALS_NONE;
+    cs->reg.pc = 0;
+    cs->reg.ac = 0;
+    cs->reg.sr = 0;
+    cs->reg.mdr = 0;
+    cs->reg.mar = 0;
  }
 
 int cs_load_and_check(cs2010 *cs, unsigned short *sentences, size_t sentences_length) {
@@ -93,6 +93,7 @@ int cs_load_and_check(cs2010 *cs, unsigned short *sentences, size_t sentences_le
         cs->mem.rom[i] = sentences[i];
     }
 
+    cs_fetch(cs);
     return CS_SUCCESS;
 }
 

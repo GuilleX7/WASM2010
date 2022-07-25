@@ -544,7 +544,7 @@ static int search_instruction(as_parse_info *pinfo, char const **lineptr) {
         return PARSE_LINE_ERROR;
     }
 
-    if (pinfo->sentence_index + 1 >= pinfo->max_sentences) {
+    if (pinfo->sentence_index >= pinfo->max_sentences) {
         trace_log_printf(&pinfo->log, "[Error] maximum sentence lines reached (%" PRI_SIZET ")\n", pinfo->max_sentences);
         return PARSE_LINE_ERROR;
     }

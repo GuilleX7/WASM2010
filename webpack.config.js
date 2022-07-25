@@ -13,7 +13,9 @@ const config = {
   },
   devServer: {
     hot: true,
-    open: true,
+    open: false,
+    host: '0.0.0.0',
+    port: 8090,
   },
   plugins: [
     new VueLoaderPlugin(),

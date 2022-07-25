@@ -1,0 +1,48 @@
+<template>
+  <div class="is-fullwidth is-fullheight asm--emulator-table">
+    <table class="is-fullwidth is-fullheight">
+      <slot></slot>
+    </table>
+  </div>
+</template>
+
+<style lang="scss">
+.asm--emulator-table {
+  overflow: auto;
+
+  table {
+    transition: opacity 86ms ease-out;
+    border-collapse: separate;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    margin-bottom: 0px;
+    background-color: white;
+    color: $dark;
+
+    tr {
+      &.is-selected {
+        background-color: $info-light;
+        color: $dark;
+      }
+
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border: 2px solid $grey-lighter;
+        border-width: 0 0 2px;
+        background-color: white;
+      }
+
+      td {
+        font-family: monospace;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid $grey-lighter;
+        border-width: 0 0 1px;
+      }
+    }
+  }
+}
+</style>

@@ -11,10 +11,10 @@
         <b-menu-list label="Examples">
           <b-menu-item
             v-for="(exampleFile, exampleFileName) in exampleFiles"
+            :key="exampleFileName"
             icon="file-document"
             class="is-text-ellipsable"
             :label="exampleFileName"
-            :key="exampleFileName"
             @click="$emit('load', exampleFileName, exampleFile)"
           ></b-menu-item>
         </b-menu-list>
