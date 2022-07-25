@@ -1,10 +1,11 @@
 --target=wasm32-wasi
 --sysroot=wasi-sysroot
 -O3
--Wl,--export-dynamic
+-Wall
+-nostartfiles
 -fvisibility=default
 -Wl,--no-entry
--nostartfiles
+-Wl,--export-dynamic
 -Wl,--export=malloc
 -Wl,--export=free
--Wall
+-Wl,--import-undefined

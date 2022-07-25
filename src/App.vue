@@ -1,60 +1,95 @@
 <template>
-  <div class="is-flex has-background-white-bis">
-    <div class="is-flex asm--column">
-      <Editor @export="openLoadAssembledCodeDialog"></Editor>
-    </div>
-    <div class="is-flex asm--column">
-      <Simulator :machineCode="loadedMachineCode"></Simulator>
-    </div>
+  <div class="is-flex has-background-white-ter">
+    <Multipane class="is-fullwidth">
+      <div
+        :class="{ 'is-fullwidth': !isRunningEmulation }"
+        style="min-width: 200px"
+        ref="assemblerContainer"
+      >
+        <Assembler
+          :isRunningEmulation="isRunningEmulation"
+          :currentRunningAssemblyLineIdx="currentRunningAssemblyLineIdx"
+          @start-emulation="startEmulation"
+          @stop-emulation="stopEmulation"
+        ></Assembler>
+      </div>
+      <MultipaneResizer v-show="isRunningEmulation"></MultipaneResizer>
+      <div
+        v-show="isRunningEmulation"
+        class="is-flex-grow-1"
+        style="min-width: 50%"
+      >
+        <Emulator
+          :assembledCode="loadedAssembledCode"
+          @current-assembly-line-changed="onCurrentAssemblyLineChanged"
+        ></Emulator>
+      </div>
+    </Multipane>
   </div>
 </template>
 
-<style lang="scss" scoped>
-.asm--column {
-  min-height: 100vh;
+<style lang="scss">
+.layout-v .multipane-resizer {
+  margin: 0 !important;
+  left: 0 !important;
+  width: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
-  &:first-child {
-    flex-basis: 50%;
-    max-width: 50%;
+  &:before {
+    content: '';
+    width: 3px;
+    height: 40px;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
   }
 
-  &:last-child {
-    flex-basis: 50%;
-    max-width: 50%;
+  &:hover {
+    &:before {
+      border-color: #999;
+    }
   }
 }
 </style>
 
 <script lang="ts">
-import Vue from 'vue';
-import Editor from './components/Editor.vue';
-import Simulator from './components/Simulator.vue';
+import { defineComponent } from '@vue/composition-api';
+import { Multipane, MultipaneResizer } from 'vue-multipane';
+import Assembler from './components/Assembler.vue';
+import Emulator from './components/Emulator.vue';
 import { loadAsm2010, TAsAssembledCode } from './wasm/asm2010';
 
-export default Vue.extend({
+export default defineComponent({
   data: () => ({
-    loadedMachineCode: [] as number[],
+    isRunningEmulation: false,
+    loadedAssembledCode: [] as TAsAssembledCode[],
+    currentRunningAssemblyLineIdx: undefined as number | undefined,
   }),
+  computed: {},
   async mounted() {
     const loadingComponent = this.$buefy.loading.open({});
-    await loadAsm2010();  
+    await loadAsm2010();
     loadingComponent.close();
   },
   methods: {
-    openLoadAssembledCodeDialog(assembledCode: TAsAssembledCode[]): void {
-      this.$buefy.dialog.confirm({
-        title: 'Load machine code',
-        message:
-          'Do you want to load new machine code? This will stop the current simulation.',
-        trapFocus: true,
-        onConfirm: () => {
-          this.loadedMachineCode = assembledCode.map(
-            ({ machineCode }) => machineCode
-          );
-        },
-      });
+    startEmulation(assembledCode: TAsAssembledCode[]): void {
+      this.loadedAssembledCode = assembledCode;
+      this.isRunningEmulation = true;
+      (this.$refs.assemblerContainer as HTMLDivElement).style.width = '20%';
+    },
+    stopEmulation(): void {
+      this.isRunningEmulation = false;
+      (this.$refs.assemblerContainer as HTMLDivElement).style.width = '100%';
+    },
+    onCurrentAssemblyLineChanged(
+      newRunningAssemblyLine: TAsAssembledCode
+    ): void {
+      this.currentRunningAssemblyLineIdx =
+        newRunningAssemblyLine?.matchingSourceLine;
     },
   },
-  components: { Editor, Simulator },
+  components: { Assembler, Emulator, Multipane, MultipaneResizer },
 });
 </script>

@@ -50,6 +50,7 @@
 
 struct cs_registers {
     unsigned long signals;
+    unsigned char *regfile[8];
     unsigned short ir;
     unsigned char r0;
     unsigned char r1;
@@ -59,7 +60,6 @@ struct cs_registers {
     unsigned char r5;
     unsigned char r6;
     unsigned char r7;
-    unsigned char *regfile[8];
     unsigned char sp;
     unsigned char pc;
     unsigned char ac;

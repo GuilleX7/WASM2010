@@ -1,5 +1,5 @@
 <template>
-  <div class="is-fullwidth is-viewheight asm--assembler-column">
+  <div class="is-fullwidth is-viewheight">
     <ExamplesSidebar
       :open="showExamplesSidebar"
       @close="showExamplesSidebar = false"
@@ -7,67 +7,78 @@
     >
     </ExamplesSidebar>
     <div class="is-flex is-flex-direction-column is-fullheight">
-      <div class="asm--source-menu">
-        <span class="mr-4 is-text-ellipsable">Source assembly</span>
-        <b-dropdown>
-          <template #trigger>
-            <b-button type="is-text">File</b-button>
-          </template>
-          <b-dropdown-item @click="showNewFileDialog">New</b-dropdown-item>
-          <b-dropdown-item @click="showOpenFileDialog">Open</b-dropdown-item>
-          <b-dropdown-item @click="showSaveFileDialog">Save</b-dropdown-item>
-          <b-dropdown-item @click="showSaveAsFileDialog"
-            >Save as</b-dropdown-item
-          >
-          <b-dropdown-item separator></b-dropdown-item>
-          <b-dropdown-item @click="showExamplesSidebar = true"
-            >Examples</b-dropdown-item
-          >
-        </b-dropdown>
-        <b-dropdown class="m-0">
-          <template #trigger>
-            <b-button type="is-text">View</b-button>
-          </template>
-          <b-dropdown-item @click="showOutput = !showOutput">{{
-            `Toggle (${showOutput ? 'hide' : 'show'}) output`
-          }}</b-dropdown-item>
-          <b-dropdown-item @click="showOutputInBase(2)"
-            >Show output in binary</b-dropdown-item
-          >
-          <b-dropdown-item @click="showOutputInBase(10)"
-            >Show output in decimal</b-dropdown-item
-          >
-          <b-dropdown-item @click="showOutputInBase(16)"
-            >Show output in hexadecimal</b-dropdown-item
-          >
-        </b-dropdown>
+      <div class="asm--assembler-menu">
+        <span class="mr-4 is-text-ellipsable">WASM2010</span>
+        <template v-if="!isRunningEmulation">
+          <b-dropdown>
+            <template #trigger>
+              <b-button type="is-text">File</b-button>
+            </template>
+            <b-dropdown-item @click="showNewFileDialog">New</b-dropdown-item>
+            <b-dropdown-item @click="showOpenFileDialog">Open</b-dropdown-item>
+            <b-dropdown-item @click="showSaveFileDialog">Save</b-dropdown-item>
+            <b-dropdown-item @click="showSaveAsFileDialog"
+              >Save as</b-dropdown-item
+            >
+            <b-dropdown-item separator></b-dropdown-item>
+            <b-dropdown-item @click="showExamplesSidebar = true"
+              >Examples</b-dropdown-item
+            >
+          </b-dropdown>
+          <b-dropdown class="m-0">
+            <template #trigger>
+              <b-button type="is-text">View</b-button>
+            </template>
+            <b-dropdown-item @click="showOutput = !showOutput">{{
+              `Toggle (${showOutput ? 'hide' : 'show'}) output`
+            }}</b-dropdown-item>
+            <b-dropdown-item @click="showOutputInBase(2)"
+              >Show output in binary</b-dropdown-item
+            >
+            <b-dropdown-item @click="showOutputInBase(10)"
+              >Show output in decimal</b-dropdown-item
+            >
+            <b-dropdown-item @click="showOutputInBase(16)"
+              >Show output in hexadecimal</b-dropdown-item
+            >
+          </b-dropdown>
+        </template>
       </div>
-      <div class="asm--source-editor">
-        <div class="asm--source-code-metadata" ref="sourceMetadataContainer">
+      <div class="asm--assembler-editor">
+        <div class="asm--assembler-code-metadata" ref="sourceMetadataContainer">
           <div
             v-for="(
               assembledMachineCode, lineIdx
             ) in assembledMachineCodePerLine"
-            class="asm--source-code-metadata-line"
+            :key="lineIdx"
+            class="asm--assembler-code-metadata-line"
             :class="{
-              'has-text-danger': wrongLineNumbers.includes(lineIdx + 1),
+              'has-background-danger has-text-light': wrongLineNumbers.includes(
+                lineIdx + 1
+              ),
+              'has-background-dark has-text-light':
+                isRunningEmulation &&
+                currentRunningAssemblyLineIdx === lineIdx + 1,
             }"
           >
             <span>{{ lineIdx + 1 }}</span>
-            <span v-if="showOutput">{{ assembledMachineCode }}</span>
+            <span v-show="showOutput && !isRunningEmulation">{{
+              assembledMachineCode
+            }}</span>
           </div>
         </div>
         <div
-          class="asm--source-code-container"
+          class="asm--assembler-code-container"
           ref="sourceCodeContainer"
           @scroll="onSourceScrolled"
         >
           <div
-            class="asm--source-code-wrapper"
+            class="asm--assembler-code-wrapper"
             :data-replicated-value="sourceAssembly"
           >
             <textarea
               spellcheck="false"
+              :readonly="isRunningEmulation"
               v-model="sourceAssembly"
               @keydown.tab.prevent="onSourceTabbed"
             ></textarea>
@@ -75,16 +86,26 @@
         </div>
       </div>
       <div
-        class="asm--status-bar is-text-ellipsable"
+        class="asm--assembler-statusbar"
         :class="{
-          'has-background-danger': isAssemblyFailed,
-          'has-text-light': isAssemblyFailed,
+          'has-background-danger has-text-light': isAssemblyFailed,
         }"
       >
-        <span class="asm--status-bar-text" :title="currentStatus">
-          {{ currentStatus }}
-        </span>
-        <div class="asm--status-bar-action-buttons">
+        <div
+          v-if="!isAssemblySuccessful"
+          class="asm--assembler-statusbar-text is-flex is-align-items-center"
+          :class="{ 'is-flex-grow-1': isAssemblyFailed }"
+          :title="currentStatus"
+        >
+          <span v-if="isAssemblyPending" class="bulma-loader-mixin mr-3"></span>
+          <span class="is-text-ellipsable">
+            {{ currentStatus }}
+          </span>
+        </div>
+        <div
+          class="asm--assembler-statusbar-action-buttons"
+          :class="{ 'is-flex-grow-1': !isAssemblyFailed }"
+        >
           <template v-if="isAssemblyFailed && logLines.length > 1">
             <b-button
               type="is-danger"
@@ -100,14 +121,24 @@
             ></b-button>
             <span>{{ currentLogLineIndex + 1 }} / {{ logLines.length }}</span>
           </template>
-          <b-button
-            v-else-if="isAssemblySuccessful"
-            type="is-light"
-            size="is-small"
-            icon-left="arrow-right-bold"
-            @click="$emit('export', assembledCode)"
-            >Load into CS2010</b-button
-          >
+          <template v-if="isAssemblySuccessful">
+            <b-button
+              v-if="!isRunningEmulation"
+              type="is-light"
+              icon-left="play"
+              :expanded="true"
+              @click="$emit('start-emulation', assembledCode)"
+              >Start emulation</b-button
+            >
+            <b-button
+              v-else
+              type="is-light"
+              icon-left="stop"
+              :expanded="true"
+              @click="$emit('stop-emulation')"
+              >Stop emulation</b-button
+            >
+          </template>
         </div>
       </div>
     </div>
@@ -115,60 +146,71 @@
 </template>
 
 <style lang="scss">
-.asm--source-menu {
+.asm--assembler-menu {
   display: flex;
-  padding-left: 2.5rem;
+  padding-left: 0.75rem;
   align-items: center;
+  height: 40px;
+  flex-shrink: 0;
 }
 
-.asm--source-editor {
+.asm--assembler-editor {
   display: flex;
   flex-direction: row;
   flex-grow: 1;
   font-family: monospace;
   overflow: hidden;
 
-  .asm--source-code-metadata {
+  .asm--assembler-code-metadata {
     display: flex;
     flex-direction: column;
-    padding: 0.75rem;
     overflow: hidden;
     flex-shrink: 0;
 
-    .asm--source-code-metadata-line {
+    .asm--assembler-code-metadata-line {
       display: flex;
       width: 100%;
+      padding: 0 0.75rem;
       justify-content: space-between;
+      transition: background-color 0.25s;
 
       & > span:nth-child(2n) {
         margin-left: 0.75rem;
       }
+
+      &:first-child {
+        margin-top: 0.75rem;
+      }
+
+      &:last-child {
+        margin-bottom: 0.75rem;
+      }
     }
   }
 
-  .asm--source-code-container {
+  .asm--assembler-code-container {
     width: 100%;
     overflow: auto;
   }
 
-  .asm--source-code-wrapper {
+  .asm--assembler-code-wrapper {
     display: grid;
     width: 100%;
     height: 100%;
   }
 
-  .asm--source-code-wrapper::after {
+  .asm--assembler-code-wrapper::after {
     content: attr(data-replicated-value) ' ';
     visibility: hidden;
   }
 
-  .asm--source-code-wrapper > textarea {
+  .asm--assembler-code-wrapper > textarea {
     resize: none;
     overflow: hidden;
   }
 
-  .asm--source-code-wrapper > textarea,
-  .asm--source-code-wrapper::after {
+  .asm--assembler-code-wrapper > textarea,
+  .asm--assembler-code-wrapper::after {
     border: none;
     padding: 0.75rem;
     font: inherit;
@@ -177,32 +219,31 @@
   }
 }
 
-.asm--status-bar {
+.asm--assembler-statusbar {
   width: 100%;
   flex-shrink: 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.75rem;
   transition: all 0.25s;
+  height: 40px;
 
-  .asm--status-bar-action-buttons {
-    margin-left: 0.75rem;
+  .asm--assembler-statusbar-text {
+    margin: 0px 0.75rem;
+  }
+
+  .asm--assembler-statusbar-action-buttons {
+    display: flex;
     flex-shrink: 0;
-
-    & > button {
-      height: 24px;
-    }
+    align-items: center;
 
     & > span {
-      margin-left: 0.75rem;
+      margin: 0px 0.75rem;
     }
   }
 }
 </style>
 
 <script lang="ts">
-import Vue from 'vue';
 import {
   formatNumber,
   maxAmountOfDigitsToRepresentNumber,
@@ -212,8 +253,19 @@ import ExamplesSidebar from './ExamplesSidebar.vue';
 import { TAsAssembledCode, asAssemble } from '@/wasm/asm2010';
 import { positiveMod } from '@/utils/math';
 import { downloadFile } from '@/utils/file';
+import { defineComponent } from '@vue/composition-api';
 
-export default Vue.extend({
+export default defineComponent({
+  props: {
+    isRunningEmulation: {
+      default: false,
+      type: Boolean,
+    },
+    currentRunningAssemblyLineIdx: {
+      default: undefined,
+      type: Number,
+    },
+  },
   data: () => ({
     sourceAssembly: '',
     debouncedSourceAssembly: '',
@@ -240,7 +292,8 @@ export default Vue.extend({
           return formatNumber(
             currentAssembledCodeLine.machineCode,
             this.outputBase,
-            16
+            16,
+            this.outputBase === 16 ? '0x' : ''
           );
         } else {
           return stringFilledWith(
@@ -259,9 +312,7 @@ export default Vue.extend({
     currentStatus(): string {
       switch (true) {
         case this.isAssembling:
-          return 'Pending assembly...';
-        case this.isAssemblySuccessful:
-          return 'Assembly OK';
+          return 'Pending...';
         case this.isAssemblyFailed:
           return this.logLines[this.currentLogLineIndex];
         default:

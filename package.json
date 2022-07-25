@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --no-open",
+    "dev": "webpack serve",
     "build": "webpack build --mode production"
   },
   "author": "",
@@ -12,7 +12,8 @@
   "dependencies": {
     "@guillex7/jasm": "^0.7.0",
     "buefy": "^0.9.21",
-    "vue": "^2.6.14"
+    "vue": "^2.6.14",
+    "vue-multipane": "^0.9.5"
   },
   "devDependencies": {
     "@babel/core": "^7.18.6",

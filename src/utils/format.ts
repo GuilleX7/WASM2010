@@ -19,9 +19,8 @@ export function padString(
   );
 }
 
-export function formatNumber(number: number, base: number, sizeInBits: number) {
+export function formatNumber(number: number, base: number, sizeInBits: number, prefix: string = '') {
   const totalCharacters = maxAmountOfDigitsToRepresentNumber(base, sizeInBits);
   const paddedString = padString(number.toString(base), '0', totalCharacters);
-  const prefix = base === 16 ? '0x' : '';
   return `${prefix}${paddedString}`;
 }
