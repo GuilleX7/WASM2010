@@ -46,7 +46,7 @@
 
       &:nth-child(odd) {
         & td {
-          background-color: $white-ter;
+          background-color: $white-bis;
         }
       }
 

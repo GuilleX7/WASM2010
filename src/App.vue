@@ -8,7 +8,7 @@
       >
         <Assembler
           :isRunningEmulation="isRunningEmulation"
-          :currentRunningAssemblyLineIdx="currentRunningAssemblyLineIdx"
+          :highlightLineIdx="currentRunningAssemblyLineIdx"
           @start-emulation="startEmulation"
           @stop-emulation="stopEmulation"
         ></Assembler>
@@ -20,6 +20,7 @@
         style="min-width: 50%"
       >
         <Emulator
+          :isRunningEmulation="isRunningEmulation"
           :assembledCode="loadedAssembledCode"
           @current-assembly-line-changed="onCurrentAssemblyLineChanged"
         ></Emulator>

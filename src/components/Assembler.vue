@@ -44,7 +44,7 @@
           </b-dropdown>
         </template>
       </div>
-      <div class="asm--assembler-editor">
+      <div class="asm--assembler-editor" ref="sourceEditorContainer">
         <div class="asm--assembler-code-metadata" ref="sourceMetadataContainer">
           <div
             v-for="(
@@ -58,8 +58,9 @@
               ),
               'has-background-dark has-text-light':
                 isRunningEmulation &&
-                currentRunningAssemblyLineIdx === lineIdx + 1,
+                highlightLineIdx === lineIdx + 1,
             }"
+            ref="sourceLinesMetadata"
           >
             <span>{{ lineIdx + 1 }}</span>
             <span v-show="showOutput && !isRunningEmulation">{{
@@ -261,7 +262,7 @@ export default defineComponent({
       default: false,
       type: Boolean,
     },
-    currentRunningAssemblyLineIdx: {
+    highlightLineIdx: {
       default: undefined,
       type: Number,
     },
@@ -448,6 +449,30 @@ export default defineComponent({
       ) {
         this.currentLogLineIndex = this.logLines.length - 1;
       }
+    },
+    highlightLineIdx(): void {
+      const sourceLineMetadata = (
+        this.$refs.sourceLinesMetadata as HTMLTableRowElement[]
+      )?.[this.highlightLineIdx];
+      if (!sourceLineMetadata) {
+        return;
+      }
+      
+      const { sourceCodeContainer, sourceMetadataContainer, sourceEditorContainer } = this
+        .$refs as Record<string, HTMLDivElement>;
+
+      const lineTopOffset = sourceLineMetadata.offsetTop;
+      const finalOffset = lineTopOffset - sourceEditorContainer.clientHeight / 2
+
+      sourceMetadataContainer.scrollTo({  
+        behavior: 'smooth',
+        top: finalOffset,
+      });
+
+      sourceCodeContainer.scrollTo({
+        behavior: 'smooth',
+        top: finalOffset,
+      });
     },
   },
   components: {

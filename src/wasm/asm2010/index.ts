@@ -11,8 +11,14 @@ import asm2010 from './asm2010.wasm';
 
 const imports = {
     env: {
-        debug(output: number) {
-            console.log(output);
+        wasm_custom_io_read(address: number): number {
+            if (address === 0x00) {
+                return Math.floor(Math.random() * 256);
+            }
+            return -1;
+        },
+        wasm_custom_io_write(address: number, content: number): boolean {
+            return false;
         },
     },
     wasi_snapshot_preview1: {
@@ -146,6 +152,7 @@ let as_parse_assemble: (pinfo: number, stop_on_error: boolean) => number;
 let as_parse_free: (pinfo: number) => void;
 let trace_log_get: (log: number) => number;
 let cs_init: (cs: number) => boolean;
+let wasm_set_custom_io_functions: (cs: number) => void;
 let cs_hard_reset: (cs: number) => void;
 let cs_soft_reset: (cs: number) => void;
 let cs_load_and_check: (
@@ -155,8 +162,7 @@ let cs_load_and_check: (
 ) => CS_LOAD_AND_CHECK_RESULT;
 let cs_microstep: (cs: number) => void;
 let cs_fullstep: (cs: number) => void;
-let cs_blockstep: (cs: number) => void;
-let cs_fetch: (cs: number) => void;
+let cs_blockstep: (cs: number, max_instructions: number) => boolean;
 
 let jasm: Jasm;
 let as_parse_info_t: TJasmObjectConstructor;
@@ -276,7 +282,7 @@ export async function loadAsm2010(): Promise<void> {
     cs_microstep = exports.cs_microstep as any;
     cs_fullstep = exports.cs_fullstep as any;
     cs_blockstep = exports.cs_blockstep as any;
-    cs_fetch = exports.cs_fetch as any;
+    wasm_set_custom_io_functions = exports.wasm_set_custom_io_functions as any;
     malloc = exports.malloc as any;
     free = exports.free as any;
 
@@ -285,9 +291,9 @@ export async function loadAsm2010(): Promise<void> {
     cs2010_t = jasm.create({ type: cs2010 });
     pinfo = as_parse_info_t.at(malloc(as_parse_info.size));
     cs = cs2010_t.at(malloc(cs2010.size));
-    // Save the pointer for performance critical code
     cs_ptr = cs()[$getAddress]();
     cs_init(cs_ptr);
+    wasm_set_custom_io_functions(cs_ptr);
 }
 
 export function asAssemble(sourceAssembly: string): TAsParseResult {
@@ -338,8 +344,8 @@ export function csFullStep(): void {
     cs_fullstep(cs_ptr);
 }
 
-export function csBlockStep(): void {
-    cs_blockstep(cs_ptr);
+export function csBlockStep(maxInstructions: number): boolean {
+    return cs_blockstep(cs_ptr, maxInstructions);
 }
 
 export function csSoftReset(): void {

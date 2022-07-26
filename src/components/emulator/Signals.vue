@@ -2,21 +2,25 @@
   <Table>
     <tr>
       <th>Signal</th>
-      <th></th>
+      <th v-for="_ in signalsPerLine - 1"></th>
     </tr>
-    <tr v-for="signal in data" :key="signal.name">
-      <td>{{ signal.name }}</td>
+    <tr v-for="(signalLine, i) in data" :key="`r${i}`">
       <td
+        v-for="(signal, e) in signalLine"
+        :key="`c${i * signalsPerLine + e}`"
         :class="{
-          'has-background-info-light': !signal.active,
-          'has-background-info': signal.active,
+          'has-background-white': !signal.active,
+          'has-background-info-light': signal.active,
         }"
-      >{{ signal.active ? 'ON' : 'OFF' }}</td>
+      >
+        {{ signal.name }}
+      </td>
     </tr>
   </Table>
 </template>
 
 <script lang="ts">
+import { chunks } from '@/utils/array';
 import { CsSignalName, TCsSignals } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
 import Table from './Table.vue';
@@ -32,13 +36,21 @@ export default defineComponent({
       required: true,
       type: Object as PropType<TCsSignals>,
     },
+    signalsPerLine: {
+      required: false,
+      default: 3,
+      type: Number,
+    },
   },
   computed: {
-    data(): TSignalLine[] {
-      return Object.entries(CsSignalName).map(([signalName, signalValue]) => ({
-        name: signalName,
-        active: Boolean(this.signals[signalValue]),
-      }));
+    data(): TSignalLine[][] {
+      return chunks(
+        Object.entries(CsSignalName).map(([signalName, signalValue]) => ({
+          name: signalName,
+          active: Boolean(this.signals[signalValue]),
+        })),
+        this.signalsPerLine
+      );
     },
   },
   components: { Table },

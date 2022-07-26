@@ -4,9 +4,24 @@
 
 #include "cs_instructions.h"
 #include "cs_op.h"
+#include <stdint.h>
+
+static unsigned char cs_read_input(cs2010 *cs, size_t offset) {
+    size_t value = cs->io_read_fn(offset);
+    if (value > UINT8_MAX) {
+        value = cs->mem.ram[offset];
+    }
+    return value;
+}
+
+static void cs_write_output(cs2010 *cs, size_t offset, unsigned char content) {
+    if (!cs->io_write_fn(offset, content)) {
+        cs->mem.ram[offset] = content;
+    }
+}
 
 void cs_op_st_stepper(cs2010 *cs) {
-    cs->mem.ram[*cs->reg.regfile[CS_GET_REG_B(cs->reg.ir)]] = *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)];
+    cs_write_output(cs, *cs->reg.regfile[CS_GET_REG_B(cs->reg.ir)], *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)]);
     cs_fetch(cs);
 }
 
@@ -27,14 +42,14 @@ void cs_op_st_microstepper(cs2010 *cs) {
         break;
     case 3:
     default:
-        cs->mem.ram[cs->reg.mar] = cs->reg.mdr;
+        cs_write_output(cs, cs->reg.mar, cs->reg.mdr);
         cs_fetch(cs);
         break;
     }
 }
 
 void cs_op_ld_stepper(cs2010 *cs) {
-    *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)] = cs->mem.ram[CS_GET_ARG_B(cs->reg.ir)];
+    *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)] = cs_read_input(cs, *cs->reg.regfile[CS_GET_REG_B(cs->reg.ir)]);
     cs_fetch(cs);
 }
 
@@ -49,7 +64,7 @@ void cs_op_ld_microstepper(cs2010 *cs) {
         cs_microfetch(cs);
         break;
     case 2:
-        cs->reg.mdr = cs->mem.ram[cs->reg.mar];
+        cs->reg.mdr = cs_read_input(cs, cs->reg.mar);
         cs_microfetch(cs);
         break;
     case 3:
@@ -61,7 +76,7 @@ void cs_op_ld_microstepper(cs2010 *cs) {
 }
 
 void cs_op_sts_stepper(cs2010 *cs) {
-    cs->mem.ram[CS_GET_ARG_B(cs->reg.ir)] = *cs->reg.regfile[CS_GET_ARG_A(cs->reg.ir)];
+    cs_write_output(cs, CS_GET_ARG_B(cs->reg.ir), *cs->reg.regfile[CS_GET_ARG_A(cs->reg.ir)]);
     cs_fetch(cs);
 }
 
@@ -82,14 +97,14 @@ void cs_op_sts_microstepper(cs2010 *cs) {
         break;
     case 3:
     default:
-        cs->mem.ram[cs->reg.mar] = cs->reg.mdr;
+        cs_write_output(cs, cs->reg.mar, cs->reg.mdr);
         cs_fetch(cs);
         break;
     }
 }
 
 void cs_op_lds_stepper(cs2010 *cs) {
-    *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)] = cs->mem.ram[CS_GET_ARG_B(cs->reg.ir)];
+    *cs->reg.regfile[CS_GET_REG_A(cs->reg.ir)] = cs_read_input(cs, CS_GET_ARG_B(cs->reg.ir));
     cs_fetch(cs);
 }
 
@@ -104,7 +119,7 @@ void cs_op_lds_microstepper(cs2010 *cs) {
         cs_microfetch(cs);
         break;
     case 2:
-        cs->reg.mdr = cs->mem.ram[cs->reg.mar];
+        cs->reg.mdr = cs_read_input(cs, cs->reg.mar);
         cs_microfetch(cs);
         break;
     case 3:
@@ -130,7 +145,8 @@ void cs_op_call_microstepper(cs2010 *cs) {
         cs_microfetch(cs);
         break;
     case 1:
-        cs->reg.mar = cs->reg.sp--;
+        cs->reg.mar = cs->reg.sp;
+        cs->reg.sp--;
         cs_microfetch(cs);
         break;
     case 2:
