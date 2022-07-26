@@ -13,7 +13,6 @@
   table {
     transition: opacity 86ms ease-out;
     border-collapse: separate;
-    border: 1px solid transparent;
     border-radius: 4px;
     margin-bottom: 0px;
     background-color: white;
@@ -34,6 +33,7 @@
         border: 2px solid $grey-lighter;
         border-width: 0 0 2px;
         background-color: white;
+        height: 1.5rem;
       }
 
       td {

@@ -6,6 +6,14 @@
 #include "cs2010.h"
 #include "cs_instructions.h"
 
+static size_t cs_io_read_stub(size_t address) {
+    return -1;
+}
+
+static bool cs_io_write_stub(size_t address, unsigned char content) {
+    return false;
+}
+
 bool cs_init(cs2010 *cs) {
     if (!cs) {
         return false;
@@ -31,8 +39,16 @@ bool cs_init(cs2010 *cs) {
     cs->reg.regfile[6] = &cs->reg.r6;
     cs->reg.regfile[7] = &cs->reg.r7;
 
+    cs->io_read_fn = cs_io_read_stub;
+    cs->io_write_fn = cs_io_write_stub;
+
     cs_hard_reset(cs);
     return true;
+}
+
+void cs_set_io_functions(cs2010 *cs, io_read_fn_t io_read_fn, io_write_fn_t io_write_fn) {
+    cs->io_read_fn = io_read_fn;
+    cs->io_write_fn = io_write_fn;
 }
 
 void cs_hard_reset(cs2010 *cs) {
@@ -127,10 +143,12 @@ void cs_fullstep(cs2010 *cs) {
     }
 }
 
-void cs_blockstep(cs2010 *cs) {
+bool cs_blockstep(cs2010 *cs, size_t max_instructions) {
     unsigned char opcode;
 
     cs_fullstep(cs);
+    max_instructions--;
+    
     opcode = CS_GET_OPCODE(cs->reg.ir);
     while (opcode != CS_INS_I_JMP &&
         opcode != CS_INS_I_BRXX &&
@@ -138,7 +156,14 @@ void cs_blockstep(cs2010 *cs) {
         !cs->stopped) {
         cs_step(cs);
         opcode = CS_GET_OPCODE(cs->reg.ir);
+
+        max_instructions--;
+        if (!max_instructions) {
+            return false;
+        }
     }
+
+    return true;
 }
 
 void cs_free(cs2010 *cs) {

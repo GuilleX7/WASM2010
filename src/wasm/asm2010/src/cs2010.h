@@ -18,11 +18,16 @@
 #define CS_NOT_ENOUGH_ROM 2
 #define CS_INVALID_INSTRUCTIONS 3
 
+typedef size_t (*io_read_fn_t)(size_t address);
+typedef bool (*io_write_fn_t)(size_t address, unsigned char content);
+
 struct cs2010 {
     cs_memory mem;
     cs_registers reg;
     unsigned char microop;
     bool stopped;
+    io_read_fn_t io_read_fn;
+    io_write_fn_t io_write_fn;
 };
 typedef struct cs2010 cs2010;
 
@@ -35,9 +40,17 @@ __attribute__((visibility("default")))
 bool cs_init(cs2010 *cs);
 
 /**
+ * @brief Sets the I/O function
+ * @param io_read_fn Function to read from I/O
+ * @param io_write_fn Function to write to I/O
+*/
+__attribute__((visibility("default")))
+void cs_set_io_functions(cs2010 *cs, io_read_fn_t io_read_fn, io_write_fn_t io_write_fn);
+
+/**
  * @brief Hard-resets the CS2010
  *      This includes clearing all the registers and
- *      memories.
+ *      memories
  * @param cs Pointer to the CS2010 structure
 */
 __attribute__((visibility("default")))
@@ -116,10 +129,14 @@ void cs_fullstep(cs2010 *cs);
 /**
  * @brief Performs a blockstep, which means executing
  *      instructions until a BRxx/JMP/CALL is found
+ *      or the machine halts
  * @param cs Pointer to the CS2010 structure
+ * @param max_instructions Maximum number of instructions
+ *      until the execution halts if no stopping condition
+ *      is met
 */
 __attribute__((visibility("default")))
-void cs_blockstep(cs2010 *cs);
+bool cs_blockstep(cs2010 *cs, size_t max_instructions);
 
 /**
  * @brief Frees a given CS2010 structure
