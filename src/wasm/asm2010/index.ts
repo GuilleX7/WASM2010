@@ -263,6 +263,7 @@ export type TCsStatus = {
     ram: number[];
     reg: TCsRegisters;
     signals: TCsSignals;
+    stopped: boolean;
 };
 
 export async function loadAsm2010(): Promise<void> {
@@ -372,5 +373,6 @@ export function csGetStatus(): TCsStatus {
             }),
             {}
         ) as TCsSignals,
+        stopped: cs().stopped[$getValue](),
     };
 }

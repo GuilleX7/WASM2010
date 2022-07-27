@@ -32,13 +32,13 @@
             <b-dropdown-item @click="showOutput = !showOutput">{{
               `Toggle (${showOutput ? 'hide' : 'show'}) output`
             }}</b-dropdown-item>
-            <b-dropdown-item @click="showOutputInBase(2)"
+            <b-dropdown-item @click="showOutputInRadix(2)"
               >Show output in binary</b-dropdown-item
             >
-            <b-dropdown-item @click="showOutputInBase(10)"
+            <b-dropdown-item @click="showOutputInRadix(10)"
               >Show output in decimal</b-dropdown-item
             >
-            <b-dropdown-item @click="showOutputInBase(16)"
+            <b-dropdown-item @click="showOutputInRadix(16)"
               >Show output in hexadecimal</b-dropdown-item
             >
           </b-dropdown>
@@ -57,8 +57,7 @@
                 lineIdx + 1
               ),
               'has-background-dark has-text-light':
-                isRunningEmulation &&
-                highlightLineIdx === lineIdx + 1,
+                isRunningEmulation && highlightLineIdx === lineIdx + 1,
             }"
             ref="sourceLinesMetadata"
           >
@@ -276,7 +275,7 @@ export default defineComponent({
     log: '',
     currentLogLineIndex: 0,
     showOutput: true,
-    outputBase: 16,
+    outputRadix: 16,
     showExamplesSidebar: false,
   }),
   computed: {
@@ -292,15 +291,15 @@ export default defineComponent({
           currentAssembledCodeLineIdx++;
           return formatNumber(
             currentAssembledCodeLine.machineCode,
-            this.outputBase,
+            this.outputRadix,
             16,
-            this.outputBase === 16 ? '0x' : ''
+            this.outputRadix === 16 ? '0x' : ''
           );
         } else {
           return stringFilledWith(
             '-',
-            maxAmountOfDigitsToRepresentNumber(this.outputBase, 16) +
-              (this.outputBase === 16 ? 2 : 0)
+            maxAmountOfDigitsToRepresentNumber(this.outputRadix, 16) +
+              (this.outputRadix === 16 ? 2 : 0)
           );
         }
       });
@@ -341,9 +340,9 @@ export default defineComponent({
     },
   },
   methods: {
-    showOutputInBase(base: number): void {
+    showOutputInRadix(radix: number): void {
       this.showOutput = true;
-      this.outputBase = base;
+      this.outputRadix = radix;
     },
     onSourceTabbed(event: any): void {
       const start = event.target.selectionStart;
@@ -457,20 +456,22 @@ export default defineComponent({
       if (!sourceLineMetadata) {
         return;
       }
-      
-      const { sourceCodeContainer, sourceMetadataContainer, sourceEditorContainer } = this
-        .$refs as Record<string, HTMLDivElement>;
+
+      const {
+        sourceCodeContainer,
+        sourceMetadataContainer,
+        sourceEditorContainer,
+      } = this.$refs as Record<string, HTMLDivElement>;
 
       const lineTopOffset = sourceLineMetadata.offsetTop;
-      const finalOffset = lineTopOffset - sourceEditorContainer.clientHeight / 2
+      const finalOffset =
+        lineTopOffset - sourceEditorContainer.clientHeight / 2;
 
-      sourceMetadataContainer.scrollTo({  
-        behavior: 'smooth',
+      sourceMetadataContainer.scrollTo({
         top: finalOffset,
       });
 
       sourceCodeContainer.scrollTo({
-        behavior: 'smooth',
         top: finalOffset,
       });
     },

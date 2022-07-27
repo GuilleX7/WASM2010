@@ -5,19 +5,19 @@
       <th>Content</th>
     </tr>
     <tr
-      v-for="(line, i) in data"
-      :key="line.address"
-      :class="{ 'is-selected': i === highlightLineIdx }"
+      v-for="(displayableMemoryWord, i) in displayableMemoryWords"
+      :key="displayableMemoryWord.address"
+      :class="{ [!isStopped ? 'has-background-info-light' : 'has-background-primary-light']: i === highlightLineIdx }"
       ref="lines"
     >
-      <td>{{ line.address }}</td>
-      <td>{{ line.content }}</td>
+      <td>{{ displayableMemoryWord.address }}</td>
+      <td class="has-text-right">{{ displayableMemoryWord.content }}</td>
     </tr>
   </Table>
 </template>
 
 <script lang="ts">
-import { formatNumber } from '@/utils/format';
+import { delimiteString, formatNumber } from '@/utils/format';
 import { defineComponent, PropType } from '@vue/composition-api';
 import Table from './Table.vue';
 
@@ -28,7 +28,7 @@ type TRomLine = {
 
 export default defineComponent({
   props: {
-    content: {
+    memory: {
       required: true,
       type: Array as PropType<number[]>,
     },
@@ -37,12 +37,28 @@ export default defineComponent({
       default: null,
       type: Number,
     },
+    displayableRadix: {
+      required: false,
+      default: 16,
+      type: Number,
+    },
+    isStopped: {
+      required: false,
+      default: false,
+      type: Boolean,
+    },
   },
   computed: {
-    data(): TRomLine[] {
-      return this.content.map((contentLine, i) => ({
+    displayableMemoryWords(): TRomLine[] {
+      const prefix = this.displayableRadix === 16 ? '$' : '';
+      const isBinary = this.displayableRadix === 2;
+      return this.memory.map((memoryWord, i) => ({
         address: formatNumber(i, 16, 8, '0x'),
-        content: formatNumber(contentLine, 16, 16, '$'),
+        content: delimiteString(
+          formatNumber(memoryWord, this.displayableRadix, 16, prefix),
+          isBinary ? 8 : 0,
+          ' '
+        ),
       }));
     },
   },
@@ -54,7 +70,7 @@ export default defineComponent({
       (this.$refs.lines as HTMLTableRowElement[])[
         this.highlightLineIdx
       ]?.scrollIntoView({
-        behavior: 'smooth',
+        behavior: 'auto',
         block: 'center',
       });
     },

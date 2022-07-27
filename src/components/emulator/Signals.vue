@@ -2,12 +2,12 @@
   <Table>
     <tr>
       <th>Signal</th>
-      <th v-for="_ in signalsPerLine - 1"></th>
+      <th v-for="_ in signalsPerRow - 1"></th>
     </tr>
     <tr v-for="(signalLine, i) in data" :key="`r${i}`">
       <td
         v-for="(signal, e) in signalLine"
-        :key="`c${i * signalsPerLine + e}`"
+        :key="`c${i * signalsPerRow + e}`"
         :class="{
           'has-background-white': !signal.active,
           'has-background-info-light': signal.active,
@@ -36,7 +36,7 @@ export default defineComponent({
       required: true,
       type: Object as PropType<TCsSignals>,
     },
-    signalsPerLine: {
+    signalsPerRow: {
       required: false,
       default: 3,
       type: Number,
@@ -49,7 +49,7 @@ export default defineComponent({
           name: signalName,
           active: Boolean(this.signals[signalValue]),
         })),
-        this.signalsPerLine
+        this.signalsPerRow
       );
     },
   },
