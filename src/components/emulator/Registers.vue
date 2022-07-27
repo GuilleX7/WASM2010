@@ -4,15 +4,15 @@
       <th>Register</th>
       <th>Content</th>
     </tr>
-    <tr v-for="line in data" :key="line.name">
-      <td>{{ line.name }}</td>
-      <td>{{ line.content }}</td>
+    <tr v-for="displayableRegister in displayableRegisters" :key="displayableRegister.name">
+      <td>{{ displayableRegister.name }}</td>
+      <td class="has-text-right">{{ displayableRegister.content }}</td>
     </tr>
   </Table>
 </template>
 
 <script lang="ts">
-import { formatNumber } from '@/utils/format';
+import { delimiteString, formatNumber } from '@/utils/format';
 import { CsRegisterName, TCsRegisters } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
 import Table from './Table.vue';
@@ -28,57 +28,73 @@ export default defineComponent({
       required: true,
       type: Object as PropType<TCsRegisters>,
     },
+    displayableRadix: {
+      required: false,
+      default: 16,
+      type: Number,
+    },
   },
   computed: {
-    data(): TRegisterLine[] {
+    displayableRegisters(): TRegisterLine[] {
+      const prefix = this.displayableRadix === 16 ? '$' : '';
+      const isBinary = this.displayableRadix === 2;
       return [
         {
           name: 'R0',
-          content: formatNumber(this.registers[CsRegisterName.R0], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R0], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R1',
-          content: formatNumber(this.registers[CsRegisterName.R1], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R1], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R2',
-          content: formatNumber(this.registers[CsRegisterName.R2], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R2], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R3',
-          content: formatNumber(this.registers[CsRegisterName.R3], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R3], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R4',
-          content: formatNumber(this.registers[CsRegisterName.R4], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R4], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R5',
-          content: formatNumber(this.registers[CsRegisterName.R5], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R5], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R6',
-          content: formatNumber(this.registers[CsRegisterName.R6], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R6], this.displayableRadix, 8, prefix),
         },
         {
           name: 'R7',
-          content: formatNumber(this.registers[CsRegisterName.R7], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.R7], this.displayableRadix, 8, prefix),
         },
         {
           name: 'PC',
-          content: formatNumber(this.registers[CsRegisterName.PC], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.PC], this.displayableRadix, 8, prefix),
         },
         {
           name: 'SP',
-          content: formatNumber(this.registers[CsRegisterName.SP], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.SP], this.displayableRadix, 8, prefix),
         },
         {
           name: 'IR',
-          content: formatNumber(this.registers[CsRegisterName.IR], 16, 16, '$'),
+          content: delimiteString(
+            formatNumber(
+              this.registers[CsRegisterName.IR],
+              this.displayableRadix,
+              16,
+              prefix
+            ),
+            isBinary ? 8 : 0,
+            ' '
+          ),
         },
         {
           name: 'AC',
-          content: formatNumber(this.registers[CsRegisterName.AC], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.AC], this.displayableRadix, 8, prefix),
         },
         {
           name: 'SR (VNZC)',
@@ -86,11 +102,11 @@ export default defineComponent({
         },
         {
           name: 'MDR',
-          content: formatNumber(this.registers[CsRegisterName.MDR], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.MDR], this.displayableRadix, 8, prefix),
         },
         {
           name: 'MAR',
-          content: formatNumber(this.registers[CsRegisterName.MAR], 16, 8, '$'),
+          content: formatNumber(this.registers[CsRegisterName.MAR], this.displayableRadix, 8, prefix),
         },
       ];
     },

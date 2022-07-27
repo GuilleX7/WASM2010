@@ -1,16 +1,26 @@
 <template>
   <div class="is-fullwidth is-fullheight asm--emulator-ram-content">
     <table class="is-fullwidth is-fullheight">
-      <tr v-for="i in 16" class="has-text-centered" :key="i">
+      <tr
+        v-for="displayableMemoryLine in displayableMemoryLines"
+        class="has-text-centered"
+        :key="`r${displayableMemoryLine.baseAddress}`"
+      >
         <th class="has-text-light has-text-weight-normal">
-          {{ formatNumber((i - 1) * 16, 16, 8, '0x') }}
+          {{ displayableMemoryLine.formattedBaseAddress }}
         </th>
         <td
-          v-for="e in 16"
-          :class="{ first: e === 1, last: e === 16 }"
-          :key="`td${i * e}`"
+          v-for="(displayableByte, byteIdxInRow) in displayableMemoryLine.bytes"
+          :class="{
+            first: byteIdxInRow === 1,
+            last: byteIdxInRow === 16,
+            'has-background-info-light':
+              displayableByte.address === highlightWordIdx,
+          }"
+          :key="`c${displayableByte.address}`"
+          ref="words"
         >
-          {{ formatNumber(content[(i - 1) * 16 + (e - 1)], 16, 8) }}
+          {{ displayableByte.formattedContent }}
         </td>
       </tr>
     </table>
@@ -45,12 +55,12 @@
       }
 
       &:nth-child(odd) {
-        & td {
+        td {
           background-color: $white-bis;
         }
       }
 
-      & th {
+      th {
         background-color: $grey-dark !important;
       }
     }
@@ -60,13 +70,78 @@
 
 <script lang="ts">
 import { formatNumber } from '@/utils/format';
+import { CS_RAM_SIZE } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
+
+type TRamWord = {
+  address: number;
+  formattedContent: string;
+};
+
+type TRamLine = {
+  baseAddress: number;
+  formattedBaseAddress: string;
+  bytes: TRamWord[];
+};
 
 export default defineComponent({
   props: {
-    content: {
+    memory: {
       required: true,
       type: Array as PropType<number[]>,
+    },
+    highlightWordIdx: {
+      required: false,
+      default: 0,
+      type: Number,
+    },
+    displayableRadix: {
+      required: false,
+      default: 16,
+      type: Number,
+    },
+    wordsPerRow: {
+      required: false,
+      default: 256,
+      type: Number,
+    },
+  },
+  computed: {
+    amountOfRows(): number {
+      return Math.ceil(CS_RAM_SIZE / this.wordsPerRow);
+    },
+    displayableMemoryLines(): TRamLine[] {
+      const displayableRamLines: TRamLine[] = [];
+      for (let i = 0; i < this.amountOfRows; i++) {
+        const lineBaseAddress = i * this.wordsPerRow;
+        displayableRamLines[i] = {
+          baseAddress: lineBaseAddress,
+          formattedBaseAddress: formatNumber(lineBaseAddress, 16, 8, '0x'),
+          bytes: [],
+        };
+        for (let j = 0; j < this.wordsPerRow; j++) {
+          const byteAddress = lineBaseAddress + j;
+          displayableRamLines[i].bytes[j] = {
+            address: byteAddress,
+            formattedContent: formatNumber(
+              this.memory?.[byteAddress] ?? 0,
+              this.displayableRadix,
+              8
+            ),
+          };
+        }
+      }
+      return displayableRamLines;
+    },
+  },
+  watch: {
+    highlightWordIdx(): void {
+      (this.$refs.words as HTMLTableRowElement[])[
+        this.highlightWordIdx
+      ]?.scrollIntoView({
+        behavior: 'auto',
+        block: 'center',
+      });
     },
   },
   methods: {

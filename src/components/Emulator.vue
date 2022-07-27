@@ -1,12 +1,11 @@
 <template>
   <div class="is-fullwidth is-viewheight">
-    <b-modal
-      v-model="showSettingsModal"
-      has-modal-card
-      trap-focus
-      :destroy-on-hide="false"
-    >
-      <SettingsModal @close="showSettingsModal = false"></SettingsModal>
+    <b-modal v-model="isSettingsModalVisible" has-modal-card trap-focus>
+      <SettingsModal
+        :settings="settings"
+        @close="isSettingsModalVisible = false"
+        @save-changes="onSettingsModalSavedChanges"
+      ></SettingsModal>
     </b-modal>
     <div class="is-flex is-flex-direction-column is-fullheight">
       <div class="asm--emulator-menu">
@@ -27,27 +26,47 @@
         </b-button>
         <b-button
           type="is-light"
+          icon-left="reload"
+          :disabled="isClockRunning"
+          @click="hardReset"
+          >Reset</b-button
+        >
+        <b-button
+          type="is-light"
           icon-left="cog"
           :disabled="isClockRunning"
-          @click="showSettingsModal = true"
+          @click="isSettingsModalVisible = true"
           >Settings</b-button
         >
       </div>
       <div class="asm--emulator-container">
         <div class="asm--emulator-rom has-background-white">
           <Rom
-            :content="rom"
+            :memory="rom"
             :highlightLineIdx="currentFetchedInstructionIdx"
+            :displayableRadix="settings.romDisplayableRadix"
+            :isStopped="stopped"
           ></Rom>
         </div>
         <div class="asm--emulator-registers has-background-white">
-          <Registers :registers="registers"></Registers>
+          <Registers
+            :registers="registers"
+            :displayableRadix="settings.registerDisplayableRadix"
+          ></Registers>
         </div>
         <div class="asm--emulator-ram has-background-white">
-          <Ram :content="ram"></Ram>
+          <Ram
+            :memory="ram"
+            :highlightWordIdx="registers.mar"
+            :displayableRadix="settings.ramDisplayableRadix"
+            :wordsPerRow="settings.ramWordsPerRow"
+          ></Ram>
         </div>
         <div class="asm--emulator-signals has-background-white">
-          <Signals :signals="signals" :signalsPerLine="4"></Signals>
+          <Signals :signals="signals" :signalsPerRow="4"></Signals>
+        </div>
+        <div class="asm--emulator-io has-background-white">
+          <Io></Io>
         </div>
       </div>
       <div class="asm--emulator-statusbar">
@@ -71,13 +90,6 @@
           :disabled="isClockRunning"
           @click="blockStep"
           >Step block</b-button
-        >
-        <b-button
-          type="is-light"
-          icon-left="reload"
-          :disabled="isClockRunning"
-          @click="hardReset"
-          >Reset</b-button
         >
       </div>
     </div>
@@ -121,6 +133,11 @@
     grid-column: 3 / 4;
     grid-row: 1 / 2;
   }
+
+  .asm--emulator-io {
+    grid-column: 3 / 4;
+    grid-row: 2 / 4;
+  }
 }
 
 .asm--emulator-statusbar {
@@ -143,19 +160,22 @@ import {
   csMicroStep,
   CsRegisterName,
   CsSignalName,
+  CS_RAM_SIZE,
   CS_ROM_SIZE,
   TAsAssembledCode,
   TCsRegisters,
   TCsSignals,
+  TCsStatus,
 } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
 import Rom from '@/components/emulator/Rom.vue';
 import Ram from '@/components/emulator/Ram.vue';
 import Registers from '@/components/emulator/Registers.vue';
 import Signals from '@/components/emulator/Signals.vue';
+import Io from '@/components/emulator/Io.vue';
 import SettingsModal from '@/components/emulator/SettingsModal.vue';
-import { formatNumber } from '@/utils/format';
 import { positiveMod } from '@/utils/math';
+import { TEmulatorSettings } from '@/types';
 
 export default defineComponent({
   props: {
@@ -170,7 +190,8 @@ export default defineComponent({
     },
   },
   data: () => ({
-    ram: new Array(256).fill(0) as number[],
+    ram: new Array(CS_RAM_SIZE).fill(0) as number[],
+    rom: new Array(CS_ROM_SIZE).fill(0) as number[],
     registers: Object.values(CsRegisterName).reduce(
       (acc, registerName) => ({
         ...acc,
@@ -185,102 +206,142 @@ export default defineComponent({
       }),
       {}
     ) as TCsSignals,
+    stopped: false,
     isClockRunning: false,
     clockTimerId: null as any,
     lastClockTick: 0,
+    clockCycleCounter: 0,
+    lastUiTick: 0,
     settings: {
-      clockRunningSpeed: 1000, // in Hz
+      clockRunningFrequency: 1000,
+      uiRefreshFrequency: 10,
       maxInstructionsBeforeHaltingBlockStep: 10000,
-    },
-    showSettingsModal: false,
+      romDisplayableRadix: 16,
+      registerDisplayableRadix: 16,
+      ramDisplayableRadix: 16,
+      ramWordsPerRow: 16,
+    } as TEmulatorSettings,
+    isSettingsModalVisible: false,
   }),
   computed: {
-    rom(): string[] {
-      return new Array(CS_ROM_SIZE)
-        .fill(0)
-        .map((_, i) =>
-          formatNumber(
-            this.assembledCode[i] ? this.assembledCode[i].machineCode : 0,
-            16,
-            16
-          )
-        );
-    },
     currentFetchedInstructionIdx(): number {
       return positiveMod(this.registers[CsRegisterName.PC] - 1, 255);
+    },
+    uiRefreshMininumTime(): number {
+      return 1000 / this.settings.uiRefreshFrequency;
     },
   },
   methods: {
     setup(): void {
-      csLoadAndStart(
-        this.assembledCode.map(
-          (assembledCodeLine) => assembledCodeLine.machineCode
-        )
-      );
-      this.updateUi();
+      let machineCode: number[] = [];
+      for (let i = 0; i < CS_ROM_SIZE; i++) {
+        machineCode[i] = this.assembledCode[i]
+          ? this.assembledCode[i].machineCode
+          : 0;
+      }
+      this.rom = machineCode;
+      csLoadAndStart(machineCode);
+      this.updateUiToMatchCsStatus(csGetStatus());
     },
-    updateUi(): void {
-      const { ram, reg, signals } = csGetStatus();
+    updateUiToMatchCsStatus({ ram, reg, signals, stopped }: TCsStatus): void {
       this.ram = ram;
       this.registers = reg;
       this.signals = signals;
+      this.stopped = stopped;
       this.$emit(
         'current-assembly-line-changed',
         this.assembledCode?.[this.currentFetchedInstructionIdx]
       );
+      if (stopped) {
+        this.$buefy.snackbar.open({
+          duration: 4000,
+          message: `Execution has finished`,
+          position: 'is-top',
+          type: 'is-info',
+        });
+      }
     },
     microStep(): void {
       csMicroStep();
-      this.updateUi();
+      this.updateUiToMatchCsStatus(csGetStatus());
     },
     fullStep(): void {
       csFullStep();
-      this.updateUi();
+      this.updateUiToMatchCsStatus(csGetStatus());
     },
     blockStep(): void {
-      if (!csBlockStep(this.settings.maxInstructionsBeforeHaltingBlockStep)) {
+      const isExecutionCompleted = csBlockStep(
+        this.settings.maxInstructionsBeforeHaltingBlockStep
+      );
+      if (!isExecutionCompleted) {
         this.$buefy.snackbar.open({
-          duration: 3000,
+          duration: 4000,
           message: `Block execution halted because no stopping condition was found after ${this.settings.maxInstructionsBeforeHaltingBlockStep} instructions`,
           position: 'is-top',
           type: 'is-warning',
         });
       }
-      this.updateUi();
+      this.updateUiToMatchCsStatus(csGetStatus());
     },
     hardReset(): void {
       csHardReset();
-      this.updateUi();
+      this.updateUiToMatchCsStatus(csGetStatus());
     },
     startClock(): void {
       this.isClockRunning = true;
-      this.lastClockTick = performance.now();
+      this.clockCycleCounter = 0;
+      this.clockTimerId = window.requestAnimationFrame((nextTickTime: number) =>
+        this.firstClockTick(nextTickTime)
+      );
+    },
+    firstClockTick(currentTickTime: number): void {
+      this.lastClockTick = currentTickTime;
+      this.lastUiTick = currentTickTime;
       this.clockTimerId = window.requestAnimationFrame((nextTickTime: number) =>
         this.clockTick(nextTickTime)
       );
     },
-    clockTick(nextTickTime: number): void {
-      const timeElapsed = nextTickTime - this.lastClockTick;
-      this.lastClockTick = nextTickTime;
-      if (timeElapsed < 0) {
-        this.clockTimerId = window.requestAnimationFrame(
-          (timeElapsed: number) => this.clockTick(timeElapsed)
-        );
-        return;
-      }
+    clockTick(currentTickTime: number): void {
+      const timeElapsedSinceLastClockTick =
+        currentTickTime - this.lastClockTick;
+      const timeElapsedSinceLastUiTick = currentTickTime - this.lastUiTick;
+      const cyclesNeededToExecuteInstruction = Math.ceil(
+        1000 / timeElapsedSinceLastClockTick
+      );
+      this.lastClockTick = currentTickTime;
+      this.clockCycleCounter += this.settings.clockRunningFrequency;
 
-      for (let i = 0; i < this.settings.clockRunningSpeed; i++) {
-        csFullStep();
+      while (this.clockCycleCounter >= cyclesNeededToExecuteInstruction) {
+        this.clockCycleCounter -= cyclesNeededToExecuteInstruction;
+        csMicroStep();
       }
-      this.updateUi();
 
       this.clockTimerId = window.requestAnimationFrame((timeElapsed: number) =>
         this.clockTick(timeElapsed)
       );
+
+      if (timeElapsedSinceLastUiTick >= this.uiRefreshMininumTime) {
+        this.lastUiTick = currentTickTime;
+        const csStatus = csGetStatus();
+        this.updateUiToMatchCsStatus(csStatus);
+        if (csStatus.stopped) {
+          this.stopClock();
+        }
+      }
     },
     stopClock(): void {
       cancelAnimationFrame(this.clockTimerId);
       this.isClockRunning = false;
+    },
+    onSettingsModalSavedChanges(newSettings: TEmulatorSettings): void {
+      this.settings = Object.entries(newSettings).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [key]: Number.parseInt(value as unknown as string),
+        }),
+        {} as TEmulatorSettings
+      );
+      this.isSettingsModalVisible = false;
     },
   },
   watch: {
@@ -298,6 +359,7 @@ export default defineComponent({
     Registers,
     Signals,
     SettingsModal,
+    Io,
   },
 });
 </script>

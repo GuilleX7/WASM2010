@@ -19,11 +19,6 @@
     color: $dark;
 
     tr {
-      &.is-selected {
-        background-color: $info-light;
-        color: $dark;
-      }
-
       th {
         position: sticky;
         top: 0;
