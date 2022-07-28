@@ -66,7 +66,10 @@
           <Signals :signals="signals" :signalsPerRow="4"></Signals>
         </div>
         <div class="asm--emulator-io has-background-white">
-          <Io></Io>
+          <Io
+            :mappedComponents="mappedIoComponents"
+            :uiClockTick="lastUiTick"
+          ></Io>
         </div>
       </div>
       <div class="asm--emulator-statusbar">
@@ -132,11 +135,13 @@
   .asm--emulator-signals {
     grid-column: 3 / 4;
     grid-row: 1 / 2;
+    overflow: hidden;
   }
 
   .asm--emulator-io {
     grid-column: 3 / 4;
     grid-row: 2 / 4;
+    overflow: hidden;
   }
 }
 
@@ -176,6 +181,7 @@ import Io from '@/components/emulator/Io.vue';
 import SettingsModal from '@/components/emulator/SettingsModal.vue';
 import { positiveMod } from '@/utils/math';
 import { TEmulatorSettings } from '@/types';
+import { IoComponentId } from './emulator/io';
 
 export default defineComponent({
   props: {
@@ -215,6 +221,7 @@ export default defineComponent({
     settings: {
       clockRunningFrequency: 1000,
       uiRefreshFrequency: 10,
+      skipMicroinstructions: false,
       maxInstructionsBeforeHaltingBlockStep: 10000,
       romDisplayableRadix: 16,
       registerDisplayableRadix: 16,
@@ -222,6 +229,12 @@ export default defineComponent({
       ramWordsPerRow: 16,
     } as TEmulatorSettings,
     isSettingsModalVisible: false,
+    mappedIoComponents: {
+      0: IoComponentId.HexDisplay,
+      1: IoComponentId.HexDisplay,
+      2: IoComponentId.Buttons,
+      7: IoComponentId.RandomGenerator,
+    },
   }),
   computed: {
     currentFetchedInstructionIdx(): number {
@@ -241,9 +254,13 @@ export default defineComponent({
       }
       this.rom = machineCode;
       csLoadAndStart(machineCode);
+      this.resetIoComponents();
       this.updateUiToMatchCsStatus(csGetStatus());
     },
-    updateUiToMatchCsStatus({ ram, reg, signals, stopped }: TCsStatus): void {
+    updateUiToMatchCsStatus(
+      { ram, reg, signals, stopped }: TCsStatus,
+      uiClockTick: number = performance.now()
+    ): void {
       this.ram = ram;
       this.registers = reg;
       this.signals = signals;
@@ -260,6 +277,7 @@ export default defineComponent({
           type: 'is-info',
         });
       }
+      this.lastUiTick = uiClockTick;
     },
     microStep(): void {
       csMicroStep();
@@ -285,7 +303,11 @@ export default defineComponent({
     },
     hardReset(): void {
       csHardReset();
+      this.resetIoComponents();
       this.updateUiToMatchCsStatus(csGetStatus());
+    },
+    resetIoComponents(): void {
+      this.mappedIoComponents = { ...this.mappedIoComponents };
     },
     startClock(): void {
       this.isClockRunning = true;
@@ -298,10 +320,13 @@ export default defineComponent({
       this.lastClockTick = currentTickTime;
       this.lastUiTick = currentTickTime;
       this.clockTimerId = window.requestAnimationFrame((nextTickTime: number) =>
-        this.clockTick(nextTickTime)
+        this.clockTick(
+          nextTickTime,
+          this.settings.skipMicroinstructions ? csFullStep : csMicroStep
+        )
       );
     },
-    clockTick(currentTickTime: number): void {
+    clockTick(currentTickTime: number, stepFn: () => void): void {
       const timeElapsedSinceLastClockTick =
         currentTickTime - this.lastClockTick;
       const timeElapsedSinceLastUiTick = currentTickTime - this.lastUiTick;
@@ -313,17 +338,16 @@ export default defineComponent({
 
       while (this.clockCycleCounter >= cyclesNeededToExecuteInstruction) {
         this.clockCycleCounter -= cyclesNeededToExecuteInstruction;
-        csMicroStep();
+        stepFn();
       }
 
       this.clockTimerId = window.requestAnimationFrame((timeElapsed: number) =>
-        this.clockTick(timeElapsed)
+        this.clockTick(timeElapsed, stepFn)
       );
 
       if (timeElapsedSinceLastUiTick >= this.uiRefreshMininumTime) {
-        this.lastUiTick = currentTickTime;
         const csStatus = csGetStatus();
-        this.updateUiToMatchCsStatus(csStatus);
+        this.updateUiToMatchCsStatus(csStatus, currentTickTime);
         if (csStatus.stopped) {
           this.stopClock();
         }
@@ -334,13 +358,9 @@ export default defineComponent({
       this.isClockRunning = false;
     },
     onSettingsModalSavedChanges(newSettings: TEmulatorSettings): void {
-      this.settings = Object.entries(newSettings).reduce(
-        (acc, [key, value]) => ({
-          ...acc,
-          [key]: Number.parseInt(value as unknown as string),
-        }),
-        {} as TEmulatorSettings
-      );
+      this.settings = {
+        ...newSettings,
+      };
       this.isSettingsModalVisible = false;
     },
   },
@@ -358,8 +378,8 @@ export default defineComponent({
     Ram,
     Registers,
     Signals,
-    SettingsModal,
     Io,
+    SettingsModal,
   },
 });
 </script>

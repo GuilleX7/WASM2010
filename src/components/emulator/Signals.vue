@@ -1,31 +1,59 @@
 <template>
-  <Table>
-    <tr>
-      <th>Signal</th>
-      <th v-for="_ in signalsPerRow - 1"></th>
-    </tr>
-    <tr v-for="(signalLine, i) in data" :key="`r${i}`">
-      <td
-        v-for="(signal, e) in signalLine"
-        :key="`c${i * signalsPerRow + e}`"
-        :class="{
-          'has-background-white': !signal.active,
-          'has-background-info-light': signal.active,
-        }"
+  <div
+    class="is-fullwidth is-fullheight asm--emulator-signals-content is-flex is-flex-direction-column"
+  >
+    <div class="asm--emulator-signals-header">Signals</div>
+    <div
+      v-for="(
+        displayableSignalGroup, displayableSignalGroupIdx
+      ) in displayableSignalGroups"
+      :key="displayableSignalGroupIdx"
+      class="is-fullwidth is-fullheight asm--emulator-signals-row"
+    >
+      <div
+        v-for="displayableSignal in displayableSignalGroup"
+        :key="displayableSignal.name"
+        :class="{ 'has-background-info-light': displayableSignal.active }"
+        class="is-flex p-2 has-text-centered is-fullwidth is-fullheight is-justify-content-center is-align-items-center"
       >
-        {{ signal.name }}
-      </td>
-    </tr>
-  </Table>
+        <span>{{ displayableSignal.name }}</span>
+      </div>
+    </div>
+  </div>
 </template>
 
+<style lang="scss">
+.asm--emulator-signals-content {
+  display: grid;
+  grid-auto-rows: max-content;
+  overflow: auto;
+
+  .asm--emulator-signals-header {
+    color: $dark;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border: 2px solid $grey-lighter;
+    border-collapse: separate;
+    border-width: 0 0 2px;
+  }
+
+  .asm--emulator-signals-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(75px, 1fr));
+    font-family: monospace;
+  }
+}
+</style>
+
 <script lang="ts">
-import { chunks } from '@/utils/array';
 import { CsSignalName, TCsSignals } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
 import Table from './Table.vue';
 
-type TSignalLine = {
+type TSignal = {
   name: string;
   active: boolean;
 };
@@ -36,20 +64,51 @@ export default defineComponent({
       required: true,
       type: Object as PropType<TCsSignals>,
     },
-    signalsPerRow: {
-      required: false,
-      default: 3,
-      type: Number,
-    },
   },
   computed: {
-    data(): TSignalLine[][] {
-      return chunks(
-        Object.entries(CsSignalName).map(([signalName, signalValue]) => ({
+    signalGroupsContent(): CsSignalName[][] {
+      return [
+        [
+          CsSignalName.WIR,
+          CsSignalName.CPC,
+          CsSignalName.RPC,
+          CsSignalName.IPC,
+          CsSignalName.WPC,
+        ],
+        [
+          CsSignalName.CSP,
+          CsSignalName.RSP,
+          CsSignalName.ISP,
+          CsSignalName.DSP,
+        ],
+        [
+          CsSignalName.WMDR,
+          CsSignalName.IOMDR,
+          CsSignalName.WMAR,
+          CsSignalName.WMEM,
+          CsSignalName.RMEM,
+        ],
+        [
+          CsSignalName.WAC,
+          CsSignalName.RAC,
+          CsSignalName.INM,
+          CsSignalName.SRW,
+          CsSignalName.WREG,
+        ],
+        [
+          CsSignalName.ALUOP3,
+          CsSignalName.ALUOP2,
+          CsSignalName.ALUOP1,
+          CsSignalName.ALUOP0,
+        ],
+      ];
+    },
+    displayableSignalGroups(): TSignal[][] {
+      return this.signalGroupsContent.map((signalGroupContent) =>
+        signalGroupContent.map((signalName) => ({
           name: signalName,
-          active: Boolean(this.signals[signalValue]),
-        })),
-        this.signalsPerRow
+          active: this.signals[signalName] as unknown as boolean,
+        }))
       );
     },
   },

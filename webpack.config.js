@@ -74,6 +74,10 @@ const config = {
         test: /\.asm$/,
         type: 'asset/source',
       },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/i,
+        type: 'asset/resource',
+      },
     ],
   },
   resolve: {

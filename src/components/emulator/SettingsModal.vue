@@ -23,7 +23,10 @@
                     !isClockRunningFrequencyValid,
                 }"
               >
-                <b-input v-model="newSettings.clockRunningFrequency"></b-input>
+                <b-input
+                  v-model="newSettings.clockRunningFrequency"
+                  type="number"
+                ></b-input>
               </b-field>
               <b-field
                 label="Interface refresh speed (Hz)"
@@ -34,8 +37,16 @@
                     !isUiRefreshFrequencyValid,
                 }"
               >
-                <b-input v-model="newSettings.uiRefreshFrequency"></b-input>
+                <b-input
+                  v-model="newSettings.uiRefreshFrequency"
+                  type="number"
+                ></b-input>
               </b-field>
+            </b-field>
+            <b-field label="Execute instructions in a single clock cycle">
+              <b-switch v-model="newSettings.skipMicroinstructions">{{
+                newSettings.skipMicroinstructions ? 'Yes' : 'No'
+              }}</b-switch>
             </b-field>
             <b-field
               label="Max instructions before halting block step"
@@ -49,6 +60,7 @@
             >
               <b-input
                 v-model="newSettings.maxInstructionsBeforeHaltingBlockStep"
+                type="number"
               ></b-input>
             </b-field>
           </b-tab-item>
@@ -102,7 +114,12 @@
                   !isRamWordsPerRowValid,
               }"
             >
-              <b-input v-model="newSettings.ramWordsPerRow" expanded> </b-input>
+              <b-input
+                v-model="newSettings.ramWordsPerRow"
+                type="number"
+                expanded
+              >
+              </b-input>
             </b-field>
           </b-tab-item>
         </b-tabs>
@@ -113,7 +130,7 @@
           label="Save changes"
           type="is-primary"
           :disabled="!areSettingsValid"
-          @click="$emit('save-changes', newSettings)"
+          @click="saveChanges"
         />
       </footer>
     </div>
@@ -180,6 +197,24 @@ export default defineComponent({
         { name: 'Decimal', value: 10 },
         { name: 'Binary', value: 2 },
       ];
+    },
+  },
+  methods: {
+    saveChanges(): void {
+      const sanitizedSettings: TEmulatorSettings = {
+        ...this.newSettings,
+        clockRunningFrequency: Number.parseInt(
+          this.newSettings.clockRunningFrequency as unknown as string
+        ),
+        maxInstructionsBeforeHaltingBlockStep: Number.parseInt(
+          this.newSettings
+            .maxInstructionsBeforeHaltingBlockStep as unknown as string
+        ),
+        ramWordsPerRow: Number.parseInt(
+          this.newSettings.ramWordsPerRow as unknown as string
+        ),
+      };
+      this.$emit('save-changes', sanitizedSettings);
     },
   },
 });

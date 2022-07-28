@@ -18,7 +18,7 @@ cs_instruction const cs_ins_list[] = {
         CS_SIGNAL_WMEM | CS_SIGNALS_FETCH,
         CS_SIGNALS_NONE
     ),
-    CS_INS_DEFINE(CS_INS_I_LD, "LD", 0x1, CS_INS_FORMAT_A, true, cs_op_st_stepper, cs_op_st_microstepper,
+    CS_INS_DEFINE(CS_INS_I_LD, "LD", 0x1, CS_INS_FORMAT_A, true, cs_op_ld_stepper, cs_op_ld_microstepper,
         CS_SIGNAL_ALUOP3 | CS_SIGNAL_ALUOP2 | CS_SIGNAL_WAC,
         CS_SIGNAL_RAC | CS_SIGNAL_WMAR,
         CS_SIGNAL_RMEM | CS_SIGNAL_IOMDR | CS_SIGNAL_WMDR,
