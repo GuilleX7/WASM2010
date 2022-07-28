@@ -8,18 +8,12 @@ import {
     TJasmObjectProxy,
 } from '@guillex7/jasm';
 import asm2010 from './asm2010.wasm';
+import { wasm_custom_io_read, wasm_custom_io_write } from './io';
 
 const imports = {
     env: {
-        wasm_custom_io_read(address: number): number {
-            if (address === 0x00) {
-                return Math.floor(Math.random() * 256);
-            }
-            return -1;
-        },
-        wasm_custom_io_write(address: number, content: number): boolean {
-            return false;
-        },
+        wasm_custom_io_read,
+        wasm_custom_io_write,
     },
     wasi_snapshot_preview1: {
         fd_close: () => {

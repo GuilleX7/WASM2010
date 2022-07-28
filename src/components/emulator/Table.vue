@@ -13,7 +13,6 @@
   table {
     transition: opacity 86ms ease-out;
     border-collapse: separate;
-    border-radius: 4px;
     margin-bottom: 0px;
     background-color: white;
     color: $dark;
