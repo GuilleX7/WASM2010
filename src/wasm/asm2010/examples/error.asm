@@ -1,3 +1,6 @@
+; This is invalid assembly and will make the assembler
+; to throw some errors :)
+
 main:   LDI R1, 3
         LDI R2          ; Error: missing operand
         CALL mult

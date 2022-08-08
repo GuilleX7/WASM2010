@@ -1,3 +1,4 @@
+import { IoComponentId } from './components/emulator/io';
 import { ICsIoHandler } from './wasm/asm2010/io';
 
 export type TEmulatorSettings = {
@@ -9,6 +10,7 @@ export type TEmulatorSettings = {
   registerDisplayableRadix: number;
   ramDisplayableRadix: number;
   ramWordsPerRow: number;
+  mappedIoComponents: Record<number, IoComponentId>;
 };
 
 export interface IUiIoController<I, O> extends ICsIoHandler {

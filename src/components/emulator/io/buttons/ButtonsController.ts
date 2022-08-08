@@ -24,9 +24,7 @@ export class UiButtonsController
         }
         break;
       case TUiButtonsEventName.Up:
-        if (this.lastButtonPressed === event.buttonIdx) {
-          this.isStillPressing = false;
-        }
+        this.isStillPressing = false;
     }
   }
 

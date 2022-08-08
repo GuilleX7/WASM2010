@@ -1,14 +1,21 @@
 <template>
   <div class="is-fullwidth is-fullheight asm--emulator-io-content">
     <b-field grouped label="Input / output">
-      <div class="is-flex is-align-items-center is-fullwidth is-flex-direction-column">
-        <component
+      <div class="is-flex is-fullwidth is-flex-direction-column">
+        <div
           v-for="(componentInstance, address) in componentsInstances"
           :key="address"
-          :is="componentInstance.controllerComponentName"
-          :controller="componentInstance.controllerInstance"
-          :uiClockTick="uiClockTick"
-        ></component>
+          class="mb-3"
+        >
+          <label>at {{ formatNumber(address, 16, 8, '0x') }}</label>
+          <component
+            v-if="componentInstance.controllerComponentName"
+            :is="componentInstance.controllerComponentName"
+            :controller="componentInstance.controllerInstance"
+            :uiClockTick="uiClockTick"
+          ></component>
+          <div v-else>({{ componentInstance.id }})</div>
+        </div>
       </div>
     </b-field>
   </div>
@@ -32,6 +39,8 @@ import {
 } from './io';
 import HexDisplayController from './io/hex-display/HexDisplayController.vue';
 import ButtonsController from './io/buttons/ButtonsController.vue';
+import KeyboardController from './io/keyboard/KeyboardController.vue';
+import { formatNumber } from '@/utils/format';
 
 export default defineComponent({
   props: {
@@ -73,6 +82,9 @@ export default defineComponent({
   mounted(): void {
     csRegisterIoHandlers(this.componentsControllers);
   },
+  methods: {
+    formatNumber,
+  },
   watch: {
     componentsControllers(
       value: Record<number, IUiIoController<unknown, unknown>>
@@ -82,7 +94,8 @@ export default defineComponent({
   },
   components: {
     HexDisplayController,
-    ButtonsController
+    ButtonsController,
+    KeyboardController,
   },
 });
 </script>

@@ -67,7 +67,7 @@
         </div>
         <div class="asm--emulator-io has-background-white">
           <Io
-            :mappedComponents="mappedIoComponents"
+            :mappedComponents="settings.mappedIoComponents"
             :uiClockTick="lastUiTick"
           ></Io>
         </div>
@@ -220,21 +220,21 @@ export default defineComponent({
     lastUiTick: 0,
     settings: {
       clockRunningFrequency: 1000,
-      uiRefreshFrequency: 10,
+      uiRefreshFrequency: 24,
       skipMicroinstructions: false,
       maxInstructionsBeforeHaltingBlockStep: 10000,
       romDisplayableRadix: 16,
       registerDisplayableRadix: 16,
       ramDisplayableRadix: 16,
       ramWordsPerRow: 16,
+      mappedIoComponents: {
+        0: IoComponentId.HexDisplay,
+        1: IoComponentId.Buttons,
+        2: IoComponentId.Keyboard,
+        3: IoComponentId.RandomGenerator,
+      },
     } as TEmulatorSettings,
     isSettingsModalVisible: false,
-    mappedIoComponents: {
-      0: IoComponentId.HexDisplay,
-      1: IoComponentId.HexDisplay,
-      2: IoComponentId.Buttons,
-      7: IoComponentId.RandomGenerator,
-    },
   }),
   computed: {
     currentFetchedInstructionIdx(): number {
@@ -307,7 +307,7 @@ export default defineComponent({
       this.updateUiToMatchCsStatus(csGetStatus());
     },
     resetIoComponents(): void {
-      this.mappedIoComponents = { ...this.mappedIoComponents };
+      this.settings.mappedIoComponents = { ...this.settings.mappedIoComponents };
     },
     startClock(): void {
       this.isClockRunning = true;
