@@ -12,7 +12,7 @@ export interface ICsIoHandler {
 let registeredIoHandlers: Record<number, ICsIoHandler> = {};
 
 export function csRegisterIoHandlers(handlers: Record<number, ICsIoHandler>) {
-    registeredIoHandlers = handlers;
+    registeredIoHandlers = { ...handlers };
 }
 
 export function wasm_custom_io_read(address: number): number {
@@ -65,7 +65,10 @@ export class IoButtonsHandler implements ICsIoHandler {
         if (!this.isStillPressing) {
             this.lastButtonPressed = IoButtonsHandler.IoButtonsNonePressed;
         }
-        if (lastButtonPressed === this.lastButtonRead) {
+        if (
+            this.mode === IoButtonsHandler.IoButtonsNonRepeatMode &&
+            lastButtonPressed === this.lastButtonRead
+        ) {
             return IoButtonsHandler.IoButtonsNonePressed;
         }
         this.lastButtonRead = lastButtonPressed;

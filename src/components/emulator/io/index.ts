@@ -1,12 +1,14 @@
 import { IUiIoController, TCtor } from '@/types';
 import { UiButtonsController } from './buttons/ButtonsController';
 import { UiHexDisplayController } from './hex-display/HexDisplayController';
+import { UiKeyboardController } from './keyboard/KeyboardController';
 import { UiRandomGeneratorController } from './random-generator/RandomGeneratorController';
 
 export enum IoComponentId {
   HexDisplay = 'hex-display',
   Buttons = 'buttons',
   RandomGenerator = 'random-generator',
+  Keyboard = 'keyboard',
 }
 
 export type TIoComponentDefinition = {
@@ -38,5 +40,10 @@ export const registeredIoComponents: Record<
   [IoComponentId.RandomGenerator]: {
     id: IoComponentId.RandomGenerator,
     controllerConstructor: UiRandomGeneratorController,
+  },
+  [IoComponentId.Keyboard]: {
+    id: IoComponentId.Keyboard,
+    controllerComponentName: 'KeyboardController',
+    controllerConstructor: UiKeyboardController,
   },
 };
