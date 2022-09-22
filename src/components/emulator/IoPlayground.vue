@@ -5,22 +5,27 @@
       label="Input / output"
     >
       <div class="is-flex is-fullwidth is-flex-direction-column">
-        <div
-          v-for="(componentInstance, address) in componentsInstances"
-          :key="address"
-          class="mb-3"
-        >
-          <label>at {{ formatNumber(address, 16, 8, '0x') }}</label>
-          <component
-            :is="componentInstance.controllerComponentName"
-            v-if="componentInstance.controllerComponentName"
-            :controller="componentInstance.controllerInstance"
-            :ui-clock-tick="uiClockTick"
-          />
-          <div v-else>
-            ({{ componentInstance.id }})
+        <template v-if="isThereIoComponents">
+          <div
+            v-for="(componentInstance, address) in componentsInstances"
+            :key="address"
+            class="mb-3"
+          >
+            <label>at {{ formatNumber(address, 16, 8, '0x') }}</label>
+            <component
+              :is="componentInstance.controllerComponentName"
+              v-if="componentInstance.controllerComponentName"
+              :controller="componentInstance.controllerInstance"
+              :ui-clock-tick="uiClockTick"
+            />
+            <div v-else>
+              ({{ componentInstance.id }})
+            </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <span>No mapped IO components yet.</span>
+        </template>
       </div>
     </b-field>
   </div>
@@ -82,6 +87,9 @@ export default defineComponent({
         {}
       );
     },
+    isThereIoComponents(): boolean {
+      return Boolean(Object.keys(this.componentsInstances).length)
+    }
   },
   watch: {
     componentsControllers(

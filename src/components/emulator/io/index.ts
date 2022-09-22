@@ -19,12 +19,14 @@ export enum IoComponentId {
 
 export type TIoComponentDefinition = {
   id: IoComponentId;
+  name: string;
   controllerComponentName?: string;
   controllerConstructor: TCtor<IUiIoController<unknown, unknown>>;
 };
 
 export type TIoComponentInstance = {
   id: IoComponentId;
+  name: string;
   controllerComponentName?: string;
   controllerInstance: IUiIoController<unknown, unknown>;
 };
@@ -35,20 +37,24 @@ export const registeredIoComponents: Record<
 > = {
   [IoComponentId.HexDisplay]: {
     id: IoComponentId.HexDisplay,
+    name: 'Hexadecimal display',
     controllerComponentName: 'HexDisplayController',
     controllerConstructor: UiHexDisplayController,
   },
   [IoComponentId.Buttons]: {
     id: IoComponentId.Buttons,
+    name: 'Buttons',
     controllerComponentName: 'ButtonsController',
     controllerConstructor: UiButtonsController,
   },
   [IoComponentId.RandomGenerator]: {
     id: IoComponentId.RandomGenerator,
+    name: 'Random generator',
     controllerConstructor: UiRandomGeneratorController,
   },
   [IoComponentId.Keyboard]: {
     id: IoComponentId.Keyboard,
+    name: 'Keyboard',
     controllerComponentName: 'KeyboardController',
     controllerConstructor: UiKeyboardController,
   },
