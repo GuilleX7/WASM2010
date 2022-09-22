@@ -1,5 +1,5 @@
-import { IUiIoController } from '@/types';
 import { IoButtonsHandler } from '@/wasm/asm2010/io';
+import { IUiIoController } from '..';
 
 export enum TUiButtonsEventName {
   Down = 'down',
@@ -28,5 +28,7 @@ export class UiButtonsController
     }
   }
 
-  uiGetState(): void {}
+  uiGetState(): void {
+    /* Stub method */
+  }
 }

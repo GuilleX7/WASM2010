@@ -1,5 +1,5 @@
-import { IUiIoController } from '@/types';
 import { IoKeyboardHandler } from '@/wasm/asm2010/io';
+import { IUiIoController } from '..';
 
 export class UiKeyboardController
   extends IoKeyboardHandler

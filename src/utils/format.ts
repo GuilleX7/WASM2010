@@ -19,7 +19,7 @@ export function padString(
   );
 }
 
-export function delimiteString(
+export function chunkString(
   string: string,
   chunkSize: number,
   delimiter: string
@@ -39,7 +39,7 @@ export function formatNumber(
   number: number,
   radix: number,
   sizeInBits: number,
-  prefix: string = ''
+  prefix = ''
 ) {
   const totalCharacters = maxAmountOfDigitsToRepresentNumber(radix, sizeInBits);
   const paddedString = padString(number.toString(radix), '0', totalCharacters);

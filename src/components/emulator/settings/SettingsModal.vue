@@ -2,8 +2,14 @@
   <form action="">
     <div class="modal-card">
       <header class="modal-card-head">
-        <p class="modal-card-title">Settings</p>
-        <button type="button" class="delete" @click="$emit('close')" />
+        <p class="modal-card-title">
+          Settings
+        </p>
+        <button
+          type="button"
+          class="delete"
+          @click="$emit('close')"
+        />
       </header>
       <section class="modal-card-body">
         <b-tabs
@@ -26,7 +32,7 @@
                 <b-input
                   v-model="newSettings.clockRunningFrequency"
                   type="number"
-                ></b-input>
+                />
               </b-field>
               <b-field
                 label="Interface refresh speed (Hz)"
@@ -40,13 +46,13 @@
                 <b-input
                   v-model="newSettings.uiRefreshFrequency"
                   type="number"
-                ></b-input>
+                />
               </b-field>
             </b-field>
             <b-field label="Execute instructions in a single clock cycle">
-              <b-switch v-model="newSettings.skipMicroinstructions">{{
-                newSettings.skipMicroinstructions ? 'Yes' : 'No'
-              }}</b-switch>
+              <b-switch v-model="newSettings.skipMicroinstructions">
+                {{ newSettings.skipMicroinstructions ? 'Yes' : 'No' }}
+              </b-switch>
             </b-field>
             <b-field
               label="Max instructions before halting block step"
@@ -61,43 +67,58 @@
               <b-input
                 v-model="newSettings.maxInstructionsBeforeHaltingBlockStep"
                 type="number"
-              ></b-input>
+              />
             </b-field>
           </b-tab-item>
 
           <b-tab-item label="User interface">
             <b-field grouped>
-              <b-field label="ROM content radix" expanded>
-                <b-select v-model="newSettings.romDisplayableRadix" expanded>
+              <b-field
+                label="ROM content radix"
+                expanded
+              >
+                <b-select
+                  v-model="newSettings.romDisplayableRadix"
+                  expanded
+                >
                   <option
                     v-for="radix in availableRadices"
-                    :value="radix.value"
                     :key="radix.value"
+                    :value="radix.value"
                   >
                     {{ radix.name }}
                   </option>
                 </b-select>
               </b-field>
-              <b-field label="RAM content radix" expanded>
-                <b-select v-model="newSettings.ramDisplayableRadix" expanded>
+              <b-field
+                label="RAM content radix"
+                expanded
+              >
+                <b-select
+                  v-model="newSettings.ramDisplayableRadix"
+                  expanded
+                >
                   <option
                     v-for="radix in availableRadices"
-                    :value="radix.value"
                     :key="radix.value"
+                    :value="radix.value"
                   >
                     {{ radix.name }}
                   </option>
                 </b-select>
               </b-field>
-              <b-field label="Register content radix" expanded>
+              <b-field
+                label="Register content radix"
+                expanded
+              >
                 <b-select
                   v-model="newSettings.registerDisplayableRadix"
                   expanded
                 >
                   <option
                     v-for="radix in availableRadices"
-                    :value="radix.value"
                     :key="radix.value"
+                    :value="radix.value"
                   >
                     {{ radix.name }}
                   </option>
@@ -118,14 +139,16 @@
                 v-model="newSettings.ramWordsPerRow"
                 type="number"
                 expanded
-              >
-              </b-input>
+              />
             </b-field>
           </b-tab-item>
         </b-tabs>
       </section>
       <footer class="modal-card-foot is-justify-content-end">
-        <b-button label="Close" @click="$emit('close')" />
+        <b-button
+          label="Close"
+          @click="$emit('close')"
+        />
         <b-button
           label="Save changes"
           type="is-primary"
@@ -138,8 +161,8 @@
 </template>
 
 <script lang="ts">
-import { TEmulatorSettings } from '@/types';
 import { defineComponent, PropType } from '@vue/composition-api';
+import { TEmulatorSettings } from '@/components/emulator/settings';
 
 export default defineComponent({
   props: {
@@ -153,7 +176,7 @@ export default defineComponent({
       newSettings: {
         ...this.settings,
       } as TEmulatorSettings,
-      activeTab: undefined as any,
+      activeTab: undefined as unknown,
     };
   },
   computed: {

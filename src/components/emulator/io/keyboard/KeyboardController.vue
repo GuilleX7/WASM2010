@@ -3,7 +3,7 @@
     type="text"
     :value="buffer"
     @keydown.native.prevent="onKeyDown"
-  ></b-input>
+  />
 </template>
 
 <script lang="ts">
@@ -24,16 +24,16 @@ export default defineComponent({
   data: () => ({
     buffer: '',
   }),
+  watch: {
+    uiClockTick(): void {
+      this.buffer = this.controller.uiGetState();
+    },
+  },
   methods: {
     onKeyDown(event: KeyboardEvent): void {
       const char = String.fromCharCode(event.which & 0xff);
       this.buffer += char;
       this.controller.uiUpdateState(char);
-    },
-  },
-  watch: {
-    uiClockTick(): void {
-      this.buffer = this.controller.uiGetState();
     },
   },
 });

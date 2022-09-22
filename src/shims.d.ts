@@ -1,6 +1,6 @@
 declare module '*.vue' {
-  import type { DefineComponent, VueConstructor, VueConstructor } from 'vue';
-  const component: DefineComponent<{}, {}, any>;
+  import type { DefineComponent } from 'vue';
+  const component: DefineComponent<unknown, unknown, unknown>;
   export default component;
 }
 
@@ -11,7 +11,7 @@ declare module '*.wasm' {
 
 declare namespace JSX {
   interface IntrinsicElements {
-    [tagName: string]: any;
+    [tagName: string]: unknown;
   }
 }
 

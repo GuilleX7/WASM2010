@@ -5,6 +5,25 @@
   </div>
 </template>
 
+<script lang="ts">
+import { defineComponent } from '@vue/composition-api';
+
+export default defineComponent({
+  props: {
+    value: {
+      required: false,
+      default: 0,
+      type: [Number, String],
+    },
+  },
+  computed: {
+    displayableValue(): string {
+      return this.value.toString(16)[0];
+    },
+  },
+});
+</script>
+
 <style lang="scss">
 .hexdisplay {
   font-family: DSEG7Classic;
@@ -25,22 +44,3 @@
   }
 }
 </style>
-
-<script lang="ts">
-import { defineComponent } from '@vue/composition-api';
-
-export default defineComponent({
-  props: {
-    value: {
-      required: false,
-      default: 0,
-      type: [Number, String],
-    },
-  },
-  computed: {
-    displayableValue(): string {
-      return this.value.toString(16)[0];
-    },
-  },
-});
-</script>

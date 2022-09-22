@@ -1,8 +1,14 @@
-import { IUiIoController, TCtor } from '@/types';
+import { TCtor } from '@/types';
+import { ICsIoHandler } from '@/wasm/asm2010/io';
 import { UiButtonsController } from './buttons/ButtonsController';
 import { UiHexDisplayController } from './hex-display/HexDisplayController';
 import { UiKeyboardController } from './keyboard/KeyboardController';
 import { UiRandomGeneratorController } from './random-generator/RandomGeneratorController';
+
+export interface IUiIoController<I, O> extends ICsIoHandler {
+  uiUpdateState(input: I): void;
+  uiGetState(): O;
+}
 
 export enum IoComponentId {
   HexDisplay = 'hex-display',

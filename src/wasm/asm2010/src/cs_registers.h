@@ -31,7 +31,8 @@
 #define CS_SIGNAL_WREG (1ul << 22)
 
 #define CS_SIGNALS_NONE 0
-#define CS_SIGNALS_ALUOP (CS_SIGNAL_ALUOP0 | CS_SIGNAL_ALUOP1 | CS_SIGNAL_ALUOP2 | CS_SIGNAL_ALUOP3)
+#define CS_SIGNALS_ALUOP                                                       \
+  (CS_SIGNAL_ALUOP0 | CS_SIGNAL_ALUOP1 | CS_SIGNAL_ALUOP2 | CS_SIGNAL_ALUOP3)
 #define CS_SIGNALS_FETCH (CS_SIGNAL_IPC | CS_SIGNAL_WIR)
 
 #define CS_ALUOP_CLC 0
@@ -49,23 +50,23 @@
 #define CS_SR_V (1u << 3)
 
 struct cs_registers {
-    unsigned long signals;
-    unsigned char *regfile[8];
-    unsigned short ir;
-    unsigned char r0;
-    unsigned char r1;
-    unsigned char r2;
-    unsigned char r3;
-    unsigned char r4;
-    unsigned char r5;
-    unsigned char r6;
-    unsigned char r7;
-    unsigned char sp;
-    unsigned char pc;
-    unsigned char ac;
-    unsigned char sr;
-    unsigned char mdr;
-    unsigned char mar;
+  unsigned long signals;
+  unsigned char *regfile[8];
+  unsigned short ir;
+  unsigned char r0;
+  unsigned char r1;
+  unsigned char r2;
+  unsigned char r3;
+  unsigned char r4;
+  unsigned char r5;
+  unsigned char r6;
+  unsigned char r7;
+  unsigned char sp;
+  unsigned char pc;
+  unsigned char ac;
+  unsigned char sr;
+  unsigned char mdr;
+  unsigned char mar;
 };
 typedef struct cs_registers cs_registers;
 
