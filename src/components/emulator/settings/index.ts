@@ -1,4 +1,4 @@
-import { IoComponentId } from "../io";
+import { IoComponentId } from '../io';
 
 export type TEmulatorSettings = {
   clockRunningFrequency: number;
@@ -10,4 +10,9 @@ export type TEmulatorSettings = {
   ramDisplayableRadix: number;
   ramWordsPerRow: number;
   mappedIoComponents: Record<number, IoComponentId>;
+};
+
+export type TMappedIoComponent = {
+  address: number;
+  componentId: IoComponentId;
 };

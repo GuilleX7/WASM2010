@@ -142,6 +142,82 @@
               />
             </b-field>
           </b-tab-item>
+
+          <b-tab-item label="Input / output">
+            <b-table :data="mappedIoComponents">
+              <b-table-column
+                v-slot="{ row: { address } }"
+                field="address"
+                label="Address"
+                sortable
+              >
+                {{ formatNumber(address, 16, 8, '0x') }}
+              </b-table-column>
+              <b-table-column
+                v-slot="{ row: { componentId } }"
+                field="componentId"
+                label="Component"
+                sortable
+              >
+                {{ getIoComponentName(componentId) }}
+              </b-table-column>
+              <b-table-column
+                v-slot="{ row: { address } }"
+                label="Actions"
+              >
+                <b-button
+                  type="is-danger is-light"
+                  icon-right="delete"
+                  @click="removeIoComponentAtAddress(address)"
+                />
+              </b-table-column>
+              <template #empty>
+                <p>No mapped IO components yet.</p>
+              </template>
+            </b-table>
+            <br>
+            <b-field grouped>
+              <b-field
+                :type="{
+                  'is-danger': !isNewComponentAddressValid,
+                }"
+              >
+                <p class="control">
+                  <span class="button is-static">0x</span>
+                </p>
+                <b-input
+                  v-model="newComponentAddress"
+                  expanded
+                  :style="{ width: '100px' }"
+                />
+              </b-field>
+              <b-select
+                v-model="newComponentId"
+                expanded
+              >
+                <option
+                  v-for="ioComponent in availableIoComponents"
+                  :key="ioComponent.id"
+                  :value="ioComponent.id"
+                >
+                  {{ ioComponent.name }}
+                </option>
+              </b-select>
+              <b-button
+                label="Add component"
+                @click="addIoComponent"
+              />
+            </b-field>
+            <b-field
+              :type="{
+                'is-danger': !isNewComponentAddressValid,
+              }"
+              :message="{
+                'Invalid address (up to two hexadecimal digits)':
+                  !isNewComponentAddressValid,
+              }"
+            />
+          </b-tab-item>
         </b-tabs>
       </section>
       <footer class="modal-card-foot is-justify-content-end">
@@ -162,7 +238,16 @@
 
 <script lang="ts">
 import { defineComponent, PropType } from '@vue/composition-api';
-import { TEmulatorSettings } from '@/components/emulator/settings';
+import {
+  TEmulatorSettings,
+  TMappedIoComponent,
+} from '@/components/emulator/settings';
+import {
+  IoComponentId,
+  registeredIoComponents,
+  TIoComponentDefinition,
+} from '../io';
+import { formatNumber } from '@/utils/format';
 
 export default defineComponent({
   props: {
@@ -177,6 +262,9 @@ export default defineComponent({
         ...this.settings,
       } as TEmulatorSettings,
       activeTab: undefined as unknown,
+      newComponentAddress: '00',
+      newComponentId: IoComponentId.Buttons,
+      areNewSettingsDirty: false,
     };
   },
   computed: {
@@ -184,7 +272,8 @@ export default defineComponent({
       return (
         this.isClockRunningFrequencyValid &&
         this.isUiRefreshFrequencyValid &&
-        this.isMaxInstructionsBeforeHaltingBlockStepValid
+        this.isMaxInstructionsBeforeHaltingBlockStepValid &&
+        this.isRamWordsPerRowValid
       );
     },
     isClockRunningFrequencyValid(): boolean {
@@ -210,6 +299,20 @@ export default defineComponent({
         this.newSettings.ramWordsPerRow >= 1 &&
         this.newSettings.ramWordsPerRow <= 32
       );
+    },
+    isNewComponentAddressValid(): boolean {
+      return /^[0-9A-F]{1,2}$/gi.test(this.newComponentAddress);
+    },
+    mappedIoComponents(): TMappedIoComponent[] {
+      return Object.entries(this.newSettings.mappedIoComponents).map(
+        ([address, componentId]) => ({
+          address: Number.parseInt(address),
+          componentId: componentId as IoComponentId,
+        })
+      );
+    },
+    availableIoComponents(): TIoComponentDefinition[] {
+      return Object.values(registeredIoComponents);
     },
     availableRadices(): {
       name: string;
@@ -239,6 +342,23 @@ export default defineComponent({
       };
       this.$emit('save-changes', sanitizedSettings);
     },
+    getIoComponentName(componentId: IoComponentId): string {
+      return registeredIoComponents[componentId].name;
+    },
+    removeIoComponentAtAddress(addressToRemove: number): void {
+      this.newSettings.mappedIoComponents = Object.fromEntries(
+        Object.entries(this.newSettings.mappedIoComponents).filter(
+          ([address]) => parseInt(address) !== addressToRemove
+        )
+      );
+    },
+    addIoComponent(): void {
+      this.newSettings.mappedIoComponents = {
+        ...this.newSettings.mappedIoComponents,
+        [parseInt(this.newComponentAddress, 16)]: this.newComponentId,
+      };
+    },
+    formatNumber,
   },
 });
 </script>

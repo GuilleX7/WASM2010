@@ -36,12 +36,13 @@ export function chunkString(
 }
 
 export function formatNumber(
-  number: number,
+  number: number | string,
   radix: number,
   sizeInBits: number,
   prefix = ''
 ) {
+  const integerNumber = typeof number === 'string' ? Number.parseInt(number) : number
   const totalCharacters = maxAmountOfDigitsToRepresentNumber(radix, sizeInBits);
-  const paddedString = padString(number.toString(radix), '0', totalCharacters);
+  const paddedString = padString(integerNumber.toString(radix), '0', totalCharacters);
   return `${prefix}${paddedString}`;
 }
