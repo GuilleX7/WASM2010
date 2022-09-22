@@ -1,11 +1,15 @@
 <template>
   <div class="is-fullwidth is-viewheight">
-    <b-modal v-model="isSettingsModalVisible" has-modal-card trap-focus>
+    <b-modal
+      v-model="isSettingsModalVisible"
+      has-modal-card
+      trap-focus
+    >
       <SettingsModal
         :settings="settings"
         @close="isSettingsModalVisible = false"
         @save-changes="onSettingsModalSavedChanges"
-      ></SettingsModal>
+      />
     </b-modal>
     <div class="is-flex is-flex-direction-column is-fullheight">
       <div class="asm--emulator-menu">
@@ -14,8 +18,9 @@
           type="is-light"
           icon-left="timer"
           @click="startClock"
-          >Start clock</b-button
         >
+          Start clock
+        </b-button>
         <b-button
           v-else
           type="is-light"
@@ -29,47 +34,52 @@
           icon-left="reload"
           :disabled="isClockRunning"
           @click="hardReset"
-          >Reset</b-button
         >
+          Reset
+        </b-button>
         <b-button
           type="is-light"
           icon-left="cog"
           :disabled="isClockRunning"
           @click="isSettingsModalVisible = true"
-          >Settings</b-button
         >
+          Settings
+        </b-button>
       </div>
       <div class="asm--emulator-container">
         <div class="asm--emulator-rom has-background-white">
-          <Rom
+          <RomViewer
             :memory="rom"
-            :highlightLineIdx="currentFetchedInstructionIdx"
-            :displayableRadix="settings.romDisplayableRadix"
-            :isStopped="stopped"
-          ></Rom>
+            :highlight-line-idx="currentFetchedInstructionIdx"
+            :displayable-radix="settings.romDisplayableRadix"
+            :is-stopped="stopped"
+          />
         </div>
         <div class="asm--emulator-registers has-background-white">
-          <Registers
+          <RegistersViewer
             :registers="registers"
-            :displayableRadix="settings.registerDisplayableRadix"
-          ></Registers>
+            :displayable-radix="settings.registerDisplayableRadix"
+          />
         </div>
         <div class="asm--emulator-ram has-background-white">
-          <Ram
+          <RamViewer
             :memory="ram"
-            :highlightWordIdx="registers.mar"
-            :displayableRadix="settings.ramDisplayableRadix"
-            :wordsPerRow="settings.ramWordsPerRow"
-          ></Ram>
+            :highlight-word-idx="registers.mar"
+            :displayable-radix="settings.ramDisplayableRadix"
+            :words-per-row="settings.ramWordsPerRow"
+          />
         </div>
         <div class="asm--emulator-signals has-background-white">
-          <Signals :signals="signals" :signalsPerRow="4"></Signals>
+          <SignalsViewer
+            :signals="signals"
+            :signals-per-row="4"
+          />
         </div>
         <div class="asm--emulator-io has-background-white">
-          <Io
-            :mappedComponents="settings.mappedIoComponents"
-            :uiClockTick="lastUiTick"
-          ></Io>
+          <IoPlayground
+            :mapped-components="settings.mappedIoComponents"
+            :ui-clock-tick="lastUiTick"
+          />
         </div>
       </div>
       <div class="asm--emulator-statusbar">
@@ -78,82 +88,29 @@
           icon-left="debug-step-into"
           :disabled="isClockRunning"
           @click="microStep"
-          >Step microop</b-button
         >
+          Step microop
+        </b-button>
         <b-button
           type="is-light"
           icon-left="debug-step-over"
           :disabled="isClockRunning"
           @click="fullStep"
-          >Step op</b-button
         >
+          Step op
+        </b-button>
         <b-button
           type="is-light"
           icon-left="debug-step-out"
           :disabled="isClockRunning"
           @click="blockStep"
-          >Step block</b-button
         >
+          Step block
+        </b-button>
       </div>
     </div>
   </div>
 </template>
-
-<style lang="scss">
-.asm--emulator-menu {
-  display: flex;
-  align-items: center;
-  height: 40px;
-  flex-shrink: 0;
-}
-
-.asm--emulator-container {
-  display: grid;
-  height: 100%;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  grid-gap: 0.75rem;
-  padding-right: 0.75rem;
-  overflow: hidden;
-
-  .asm--emulator-rom {
-    grid-column: 1 / 2;
-    grid-row: 1 / 3;
-  }
-
-  .asm--emulator-registers {
-    grid-column: 2 / 3;
-    grid-row: 1 / 3;
-  }
-
-  .asm--emulator-ram {
-    grid-column: 1 / 3;
-    grid-row: 3 / 4;
-    overflow: hidden;
-  }
-
-  .asm--emulator-signals {
-    grid-column: 3 / 4;
-    grid-row: 1 / 2;
-    overflow: hidden;
-  }
-
-  .asm--emulator-io {
-    grid-column: 3 / 4;
-    grid-row: 2 / 4;
-    overflow: hidden;
-  }
-}
-
-.asm--emulator-statusbar {
-  width: 100%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  transition: all 0.25s;
-  height: 40px;
-}
-</style>
 
 <script lang="ts">
 import {
@@ -173,17 +130,25 @@ import {
   TCsStatus,
 } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
-import Rom from '@/components/emulator/Rom.vue';
-import Ram from '@/components/emulator/Ram.vue';
-import Registers from '@/components/emulator/Registers.vue';
-import Signals from '@/components/emulator/Signals.vue';
-import Io from '@/components/emulator/Io.vue';
-import SettingsModal from '@/components/emulator/SettingsModal.vue';
+import RomViewer from '@/components/emulator/RomViewer.vue';
+import RamViewer from '@/components/emulator/RamViewer.vue';
+import RegistersViewer from '@/components/emulator/RegistersViewer.vue';
+import SignalsViewer from '@/components/emulator/SignalsViewer.vue';
+import IoPlayground from '@/components/emulator/IoPlayground.vue';
+import SettingsModal from '@/components/emulator/settings/SettingsModal.vue';
 import { positiveMod } from '@/utils/math';
-import { TEmulatorSettings } from '@/types';
-import { IoComponentId } from './emulator/io';
+import { TEmulatorSettings } from '@/components/emulator/settings';
+import { IoComponentId } from '@/components/emulator/io';
 
 export default defineComponent({
+  components: {
+    RomViewer,
+    RamViewer,
+    RegistersViewer,
+    SignalsViewer,
+    IoPlayground,
+    SettingsModal,
+  },
   props: {
     assembledCode: {
       required: true,
@@ -214,7 +179,7 @@ export default defineComponent({
     ) as TCsSignals,
     stopped: false,
     isClockRunning: false,
-    clockTimerId: null as any,
+    clockTimerId: 0,
     lastClockTick: 0,
     clockCycleCounter: 0,
     lastUiTick: 0,
@@ -242,6 +207,15 @@ export default defineComponent({
     },
     uiRefreshMininumTime(): number {
       return 1000 / this.settings.uiRefreshFrequency;
+    },
+  },
+  watch: {
+    isRunningEmulation(value) {
+      if (value) {
+        this.setup();
+      } else {
+        this.stopClock();
+      }
     },
   },
   methods: {
@@ -307,7 +281,9 @@ export default defineComponent({
       this.updateUiToMatchCsStatus(csGetStatus());
     },
     resetIoComponents(): void {
-      this.settings.mappedIoComponents = { ...this.settings.mappedIoComponents };
+      this.settings.mappedIoComponents = {
+        ...this.settings.mappedIoComponents,
+      };
     },
     startClock(): void {
       this.isClockRunning = true;
@@ -364,22 +340,61 @@ export default defineComponent({
       this.isSettingsModalVisible = false;
     },
   },
-  watch: {
-    isRunningEmulation(value) {
-      if (value) {
-        this.setup();
-      } else {
-        this.stopClock();
-      }
-    },
-  },
-  components: {
-    Rom,
-    Ram,
-    Registers,
-    Signals,
-    Io,
-    SettingsModal,
-  },
 });
 </script>
+
+<style lang="scss">
+.asm--emulator-menu {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.asm--emulator-container {
+  display: grid;
+  height: 100%;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  grid-gap: 0.75rem;
+  padding-right: 0.75rem;
+  overflow: hidden;
+
+  .asm--emulator-rom {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+  }
+
+  .asm--emulator-registers {
+    grid-column: 2 / 3;
+    grid-row: 1 / 3;
+  }
+
+  .asm--emulator-ram {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4;
+    overflow: hidden;
+  }
+
+  .asm--emulator-signals {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+    overflow: hidden;
+  }
+
+  .asm--emulator-io {
+    grid-column: 3 / 4;
+    grid-row: 2 / 4;
+    overflow: hidden;
+  }
+}
+
+.asm--emulator-statusbar {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  transition: all 0.25s;
+  height: 40px;
+}
+</style>

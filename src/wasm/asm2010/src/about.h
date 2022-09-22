@@ -12,13 +12,16 @@
 #define ASM2010_MINOR_VERSION 4
 #define ASM2010_PATCH_VERSION 5
 
-#define MAKE_ABOUT_TEXT(NAME, DESCRIPTION) \
-NAME " v"\
-STRINGIFY(ASM2010_MAJOR_VERSION) "."\
-STRINGIFY(ASM2010_MINOR_VERSION) "."\
-STRINGIFY(ASM2010_PATCH_VERSION)\
-" - " DESCRIPTION "\n"\
-"Developed by " ASM2010_AUTHOR " - " ASM2010_EMAIL"\n"\
-ASM2010_URL
+#define MAKE_ABOUT_TEXT(NAME, DESCRIPTION)                                           \
+  NAME " v" STRINGIFY(ASM2010_MAJOR_VERSION) "." STRINGIFY(                          \
+      ASM2010_MINOR_VERSION) "." STRINGIFY(ASM2010_PATCH_VERSION) " -"               \
+                                                                  " " DESCRIPTION    \
+                                                                  "\n"               \
+                                                                  "Developed "       \
+                                                                  "by"               \
+                                                                  " " ASM2010_AUTHOR \
+                                                                  " -"               \
+                                                                  " " ASM2010_EMAIL  \
+                                                                  "\n" ASM2010_URL
 
 #endif /* ABOUT_H */

@@ -2,7 +2,9 @@
   <div
     class="is-fullwidth is-fullheight asm--emulator-signals-content is-flex is-flex-direction-column"
   >
-    <div class="asm--emulator-signals-header">Signals</div>
+    <div class="asm--emulator-signals-header">
+      Signals
+    </div>
     <div
       v-for="(
         displayableSignalGroup, displayableSignalGroupIdx
@@ -22,36 +24,9 @@
   </div>
 </template>
 
-<style lang="scss">
-.asm--emulator-signals-content {
-  display: grid;
-  grid-auto-rows: max-content;
-  overflow: auto;
-
-  .asm--emulator-signals-header {
-    color: $dark;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border: 2px solid $grey-lighter;
-    border-collapse: separate;
-    border-width: 0 0 2px;
-  }
-
-  .asm--emulator-signals-row {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(75px, 1fr));
-    font-family: monospace;
-  }
-}
-</style>
-
 <script lang="ts">
 import { CsSignalName, TCsSignals } from '@/wasm/asm2010';
 import { defineComponent, PropType } from '@vue/composition-api';
-import Table from './Table.vue';
 
 type TSignal = {
   name: string;
@@ -112,6 +87,31 @@ export default defineComponent({
       );
     },
   },
-  components: { Table },
 });
 </script>
+
+<style lang="scss">
+.asm--emulator-signals-content {
+  display: grid;
+  grid-auto-rows: max-content;
+  overflow: auto;
+
+  .asm--emulator-signals-header {
+    color: $dark;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border: 2px solid $grey-lighter;
+    border-collapse: separate;
+    border-width: 0 0 2px;
+  }
+
+  .asm--emulator-signals-row {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(75px, 1fr));
+    font-family: monospace;
+  }
+}
+</style>

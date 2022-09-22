@@ -17,13 +17,13 @@
 #define STRINGIFY(a) STRGIFY(a)
 
 #ifdef _WIN32
-#  ifdef _WIN64
-#    define PRI_SIZET PRIu64
-#  else
-#    define PRI_SIZET PRIu32
-#  endif /* _WIN64 */
+#ifdef _WIN64
+#define PRI_SIZET PRIu64
 #else
-#  define PRI_SIZET "zu"
+#define PRI_SIZET PRIu32
+#endif /* _WIN64 */
+#else
+#define PRI_SIZET "zu"
 #endif /* _WIN32 */
 
 #define BOOLEAN_FORMAT "%u"
@@ -49,8 +49,9 @@
  *              track of the position
  * @return false if there are no more lines left,
  *         true otherwise
-*/
-__attribute__((visibility("default")))
-bool read_upper_line(char *line, size_t max_length, char const *const str, size_t *offset);
+ */
+__attribute__((visibility("default"))) bool
+read_upper_line(char *line, size_t max_length, char const *const str,
+                size_t *offset);
 
 #endif /* UTILS_H */

@@ -1,6 +1,9 @@
 <template>
   <div class="is-fullwidth is-fullheight asm--emulator-io-content">
-    <b-field grouped label="Input / output">
+    <b-field
+      grouped
+      label="Input / output"
+    >
       <div class="is-flex is-fullwidth is-flex-direction-column">
         <div
           v-for="(componentInstance, address) in componentsInstances"
@@ -9,40 +12,40 @@
         >
           <label>at {{ formatNumber(address, 16, 8, '0x') }}</label>
           <component
-            v-if="componentInstance.controllerComponentName"
             :is="componentInstance.controllerComponentName"
+            v-if="componentInstance.controllerComponentName"
             :controller="componentInstance.controllerInstance"
-            :uiClockTick="uiClockTick"
-          ></component>
-          <div v-else>({{ componentInstance.id }})</div>
+            :ui-clock-tick="uiClockTick"
+          />
+          <div v-else>
+            ({{ componentInstance.id }})
+          </div>
         </div>
       </div>
     </b-field>
   </div>
 </template>
 
-<style lang="scss">
-.asm--emulator-io-content {
-  overflow: auto;
-  padding: 0.75rem;
-}
-</style>
-
 <script lang="ts">
-import { IUiIoController } from '@/types';
 import { csRegisterIoHandlers } from '@/wasm/asm2010/io';
 import { defineComponent, PropType } from '@vue/composition-api';
 import {
   IoComponentId,
+  IUiIoController,
   registeredIoComponents,
   TIoComponentInstance,
 } from './io';
-import HexDisplayController from './io/hex-display/HexDisplayController.vue';
-import ButtonsController from './io/buttons/ButtonsController.vue';
-import KeyboardController from './io/keyboard/KeyboardController.vue';
+import HexDisplayController from '@/components/emulator/io/hex-display/HexDisplayController.vue';
+import ButtonsController from '@/components/emulator/io/buttons/ButtonsController.vue';
+import KeyboardController from '@/components/emulator/io/keyboard/KeyboardController.vue';
 import { formatNumber } from '@/utils/format';
 
 export default defineComponent({
+  components: {
+    HexDisplayController,
+    ButtonsController,
+    KeyboardController,
+  },
   props: {
     mappedComponents: {
       type: Object as PropType<Record<number, IoComponentId>>,
@@ -50,6 +53,7 @@ export default defineComponent({
     },
     uiClockTick: {
       type: Number,
+      default: 0,
     },
   },
   computed: {
@@ -79,12 +83,6 @@ export default defineComponent({
       );
     },
   },
-  mounted(): void {
-    csRegisterIoHandlers(this.componentsControllers);
-  },
-  methods: {
-    formatNumber,
-  },
   watch: {
     componentsControllers(
       value: Record<number, IUiIoController<unknown, unknown>>
@@ -92,10 +90,18 @@ export default defineComponent({
       csRegisterIoHandlers(value);
     },
   },
-  components: {
-    HexDisplayController,
-    ButtonsController,
-    KeyboardController,
+  mounted(): void {
+    csRegisterIoHandlers(this.componentsControllers);
+  },
+  methods: {
+    formatNumber,
   },
 });
 </script>
+
+<style lang="scss">
+.asm--emulator-io-content {
+  overflow: auto;
+  padding: 0.75rem;
+}
+</style>

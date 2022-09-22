@@ -265,21 +265,22 @@ export async function loadAsm2010(): Promise<void> {
         instance: { exports },
     } = await WebAssembly.instantiateStreaming(fetch(asm2010), imports);
 
-    as_parse_init = exports.as_parse_init as any;
-    as_parse_source = exports.as_parse_source as any;
-    as_parse_assemble = exports.as_parse_assemble as any;
-    as_parse_free = exports.as_parse_free as any;
-    trace_log_get = exports.trace_log_get as any;
-    cs_init = exports.cs_init as any;
-    cs_hard_reset = exports.cs_hard_reset as any;
-    cs_soft_reset = exports.cs_soft_reset as any;
-    cs_load_and_check = exports.cs_load_and_check as any;
-    cs_microstep = exports.cs_microstep as any;
-    cs_fullstep = exports.cs_fullstep as any;
-    cs_blockstep = exports.cs_blockstep as any;
-    wasm_set_custom_io_functions = exports.wasm_set_custom_io_functions as any;
-    malloc = exports.malloc as any;
-    free = exports.free as any;
+    as_parse_init = exports.as_parse_init as typeof as_parse_init;
+    as_parse_source = exports.as_parse_source as typeof as_parse_source;
+    as_parse_assemble = exports.as_parse_assemble as typeof as_parse_assemble;
+    as_parse_free = exports.as_parse_free as typeof as_parse_free;
+    trace_log_get = exports.trace_log_get as typeof trace_log_get;
+    cs_init = exports.cs_init as typeof cs_init;
+    cs_hard_reset = exports.cs_hard_reset as typeof cs_hard_reset;
+    cs_soft_reset = exports.cs_soft_reset as typeof cs_soft_reset;
+    cs_load_and_check = exports.cs_load_and_check as typeof cs_load_and_check;
+    cs_microstep = exports.cs_microstep as typeof cs_microstep;
+    cs_fullstep = exports.cs_fullstep as typeof cs_fullstep;
+    cs_blockstep = exports.cs_blockstep as typeof cs_blockstep;
+    wasm_set_custom_io_functions =
+        exports.wasm_set_custom_io_functions as typeof wasm_set_custom_io_functions;
+    malloc = exports.malloc as typeof malloc;
+    free = exports.free as typeof free;
 
     jasm = new Jasm(exports.memory as WebAssembly.Memory);
     as_parse_info_t = jasm.create({ type: as_parse_info });
@@ -292,7 +293,7 @@ export async function loadAsm2010(): Promise<void> {
 }
 
 export function asAssemble(sourceAssembly: string): TAsParseResult {
-    let assembledCode: TAsAssembledCode[] = [];
+    const assembledCode: TAsAssembledCode[] = [];
 
     const finalSourceAssembly = `${sourceAssembly}\n`;
     const src_code_ptr = malloc(finalSourceAssembly.length);
@@ -304,7 +305,9 @@ export function asAssemble(sourceAssembly: string): TAsParseResult {
 
     const assembledCodeSize = pinfo().assembled_code_index[$getValue]();
     for (let i = 0; i < assembledCodeSize; i++) {
-        let assembledCodeLine = pinfo().assembled_code[$deref](i)[$getValue]();
+        const assembledCodeLine = pinfo()
+            .assembled_code[$deref](i)
+            [$getValue]();
         assembledCode[i] = {
             machineCode: assembledCodeLine.machine_code,
             matchingSourceLine: assembledCodeLine.parsing_line_index,

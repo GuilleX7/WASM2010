@@ -7,74 +7,75 @@
 
 #include "cs_instructions.h"
 
-#include "utils.h"
 #include "hash_table.h"
 #include "trace_log.h"
+#include "utils.h"
 
 #define AS_MAX_SOURCE_LINES 65535
 #define AS_MAX_LINE_LENGTH 256
 #define AS_MAX_TRACE_LENGTH 256
 #define AS_MAX_LOG_LENGTH (AS_MAX_TRACE_LENGTH * 5)
-#define AS_MAX_EQU_LENGTH 64	
+#define AS_MAX_EQU_LENGTH 64
 
 /* The longest line, so 16 bytes is enough
-	1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
-	O  O  O  O     0  x  F  F  ,     0  X  F  F /0 */
+        1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+        O  O  O  O     0  x  F  F  ,     0  X  F  F /0 */
 #define AS_MAX_DISASSEMBLY_LENGTH 16
 
 #define AS_ARGUMENT_TYPE_INM 0
 #define AS_ARGUMENT_TYPE_EQU 1
 #define AS_ARGUMENT_TYPE_INVALID 2
-#define AS_ARGUMENT_DEFINE_OF_TYPE(type) { { 0 }, type}
+#define AS_ARGUMENT_DEFINE_OF_TYPE(type)                                       \
+  { {0}, type }
 
 #define AS_PARSE_OK 0
 #define AS_PARSE_WARNING 1
 #define AS_PARSE_ERROR 2
 
 struct as_parse_argument {
-	union {
-		size_t inm;
-		char *equ_key;
-	} value;
-	int type;
+  union {
+    size_t inm;
+    char *equ_key;
+  } value;
+  int type;
 };
 typedef struct as_parse_argument as_parse_argument;
 
 struct as_parse_sentence {
-	as_parse_argument arg_a;
-	as_parse_argument arg_b;
-	cs_instruction const *instruction;
-	size_t parsing_line_index;
+  as_parse_argument arg_a;
+  as_parse_argument arg_b;
+  cs_instruction const *instruction;
+  size_t parsing_line_index;
 };
 typedef struct as_parse_sentence as_parse_sentence;
 
 struct as_parse_assembled_code {
-    size_t parsing_line_index;
-    unsigned short machine_code;
+  size_t parsing_line_index;
+  unsigned short machine_code;
 };
 typedef struct as_parse_assembled_code as_parse_assembled_code;
 
 /**
-	@brief Structure containing all the information needed to assemble
-	a CS2010 program after parsing the assembly code
+        @brief Structure containing all the information needed to assemble
+        a CS2010 program after parsing the assembly code
 */
 struct as_parse_info {
-	/** @brief Hash table containig all equ replacements */
-	hash_table equs_ht;
-	/** @brief Trace log for the assembly proccess */
-	trace_log log;
-	/** @brief Index of current parsing line */
-	size_t parsing_line_index;
-	/** @brief Maximum amount of sentences */
-	size_t max_sentences;
-	/** @brief Array containing all valid parsed sentences */
-	as_parse_sentence *sentences;
-	/** @brief Index of current sentence */
-	size_t sentence_index;
-	/** @brief Array containing assembled machine code */
-	as_parse_assembled_code *assembled_code;
-    /** @brief Index of current machine code */
-    size_t assembled_code_index;
+  /** @brief Hash table containig all equ replacements */
+  hash_table equs_ht;
+  /** @brief Trace log for the assembly proccess */
+  trace_log log;
+  /** @brief Index of current parsing line */
+  size_t parsing_line_index;
+  /** @brief Maximum amount of sentences */
+  size_t max_sentences;
+  /** @brief Array containing all valid parsed sentences */
+  as_parse_sentence *sentences;
+  /** @brief Index of current sentence */
+  size_t sentence_index;
+  /** @brief Array containing assembled machine code */
+  as_parse_assembled_code *assembled_code;
+  /** @brief Index of current machine code */
+  size_t assembled_code_index;
 };
 typedef struct as_parse_info as_parse_info;
 
@@ -82,9 +83,9 @@ typedef struct as_parse_info as_parse_info;
  * @brief Initializes a parse struct
  * @param pinfo Pointer to as_parse_info struct to be initialized
  * @return 0 if success, non-zero value otherwise
-*/
-__attribute__((visibility("default")))
-int as_parse_init(as_parse_info *pinfo, size_t max_sentences);
+ */
+__attribute__((visibility("default"))) int as_parse_init(as_parse_info *pinfo,
+                                                         size_t max_sentences);
 
 /**
  * @brief Parses CS2010 assembly code.
@@ -96,9 +97,9 @@ int as_parse_init(as_parse_info *pinfo, size_t max_sentences);
  * @return AS_PARSE_OK if source was parsed successfully,
  *			AS_PARSE_WARNING if any warning raised or
  *			AS_PARSE_ERROR if parsing was aborted
-*/
-__attribute__((visibility("default")))
-int as_parse_source(as_parse_info *pinfo, char const *source, bool stop_on_error);
+ */
+__attribute__((visibility("default"))) int
+as_parse_source(as_parse_info *pinfo, char const *source, bool stop_on_error);
 
 /**
  * @brief Parses one line of CS2010 assembly code.
@@ -110,13 +111,13 @@ int as_parse_source(as_parse_info *pinfo, char const *source, bool stop_on_error
  * @return AS_PARSE_OK if line was parsed successfully,
  *			AS_PARSE_WARNING if a warning raised or
  *			AS_PARSE_ERROR if parsing should be aborted
-*/
-__attribute__((visibility("default")))
-int as_parse_line(as_parse_info *pinfo, char const *line);
+ */
+__attribute__((visibility("default"))) int as_parse_line(as_parse_info *pinfo,
+                                                         char const *line);
 
 /**
  * @brief Assembles the parsing struct (it contains the previously
-		parsed assembly lines) into binary machine code.
+                parsed assembly lines) into binary machine code.
  * @param pinfo Pointer to as_parse_info struct that keeps tract of
  *		parsing proccess
 * @param stop_on_error Whether it should stop assembling if any
@@ -124,15 +125,14 @@ int as_parse_line(as_parse_info *pinfo, char const *line);
  * @return AS_PARSE_OK if machine code was assembled successfully,
  *			AS_PARSE_ERROR otherwise
 */
-__attribute__((visibility("default")))
-int as_parse_assemble(as_parse_info *pinfo, bool stop_on_error);
+__attribute__((visibility("default"))) int
+as_parse_assemble(as_parse_info *pinfo, bool stop_on_error);
 
 /**
  * @brief Frees as_parse_info struct and associated memory
  * @param pinfo Pointer to as_parse_info structure
-*/
-__attribute__((visibility("default")))
-void as_parse_free(as_parse_info *pinfo);
+ */
+__attribute__((visibility("default"))) void as_parse_free(as_parse_info *pinfo);
 
 /**
  * @brief Disassembles a given raw, binary sentence of CS2010 machine
@@ -141,8 +141,8 @@ void as_parse_free(as_parse_info *pinfo);
  * @param raw_sentence Binary CS2010 machine code sentence
  * @return Pointer to string containing the dissasembly if success,
  *		a null pointer otherwise (invalid binary code)
-*/
-__attribute__((visibility("default")))
-char *as_disassemble_sentence(unsigned short raw_sentence);
+ */
+__attribute__((visibility("default"))) char *
+as_disassemble_sentence(unsigned short raw_sentence);
 
 #endif /* AS_PARSE_H */

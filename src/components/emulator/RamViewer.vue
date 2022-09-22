@@ -3,22 +3,22 @@
     <table class="is-fullwidth is-fullheight">
       <tr
         v-for="displayableMemoryLine in displayableMemoryLines"
-        class="has-text-centered"
         :key="`r${displayableMemoryLine.baseAddress}`"
+        class="has-text-centered"
       >
         <th class="has-text-light has-text-weight-normal">
           {{ displayableMemoryLine.formattedBaseAddress }}
         </th>
         <td
           v-for="(displayableByte, byteIdxInRow) in displayableMemoryLine.bytes"
+          :key="`c${displayableByte.address}`"
+          ref="words"
           :class="{
             first: byteIdxInRow === 1,
             last: byteIdxInRow === 16,
             'has-background-info-light':
               displayableByte.address === highlightWordIdx,
           }"
-          :key="`c${displayableByte.address}`"
-          ref="words"
         >
           {{ displayableByte.formattedContent }}
         </td>
@@ -26,47 +26,6 @@
     </table>
   </div>
 </template>
-
-<style lang="scss" scoped>
-.asm--emulator-ram-content {
-  overflow: auto;
-
-  table {
-    border-collapse: separate;
-    font-family: monospace;
-
-    th {
-      padding: 5px 10px;
-      vertical-align: middle;
-    }
-
-    tr {
-      td {
-        padding: 5px;
-        vertical-align: middle;
-
-        &.first {
-          padding-left: 10px;
-        }
-
-        &.last {
-          padding-right: 10px;
-        }
-      }
-
-      &:nth-child(odd) {
-        td {
-          background-color: $white-bis;
-        }
-      }
-
-      th {
-        background-color: $grey-dark !important;
-      }
-    }
-  }
-}
-</style>
 
 <script lang="ts">
 import { formatNumber } from '@/utils/format';
@@ -149,3 +108,44 @@ export default defineComponent({
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.asm--emulator-ram-content {
+  overflow: auto;
+
+  table {
+    border-collapse: separate;
+    font-family: monospace;
+
+    th {
+      padding: 5px 10px;
+      vertical-align: middle;
+    }
+
+    tr {
+      td {
+        padding: 5px;
+        vertical-align: middle;
+
+        &.first {
+          padding-left: 10px;
+        }
+
+        &.last {
+          padding-right: 10px;
+        }
+      }
+
+      &:nth-child(odd) {
+        td {
+          background-color: $white-bis;
+        }
+      }
+
+      th {
+        background-color: $grey-dark !important;
+      }
+    }
+  }
+}
+</style>

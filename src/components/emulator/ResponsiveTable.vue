@@ -1,7 +1,7 @@
 <template>
   <div class="is-fullwidth is-fullheight asm--emulator-table">
     <table class="is-fullwidth is-fullheight">
-      <slot></slot>
+      <slot />
     </table>
   </div>
 </template>

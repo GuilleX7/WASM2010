@@ -1,5 +1,5 @@
 <template>
-  <Table>
+  <ResponsiveTable>
     <tr>
       <th>ROM</th>
       <th>Content</th>
@@ -7,19 +7,25 @@
     <tr
       v-for="(displayableMemoryWord, i) in displayableMemoryWords"
       :key="displayableMemoryWord.address"
-      :class="{ [!isStopped ? 'has-background-info-light' : 'has-background-primary-light']: i === highlightLineIdx }"
       ref="lines"
+      :class="{
+        [!isStopped
+          ? 'has-background-info-light'
+          : 'has-background-primary-light']: i === highlightLineIdx,
+      }"
     >
       <td>{{ displayableMemoryWord.address }}</td>
-      <td class="has-text-right">{{ displayableMemoryWord.content }}</td>
+      <td class="has-text-right">
+        {{ displayableMemoryWord.content }}
+      </td>
     </tr>
-  </Table>
+  </ResponsiveTable>
 </template>
 
 <script lang="ts">
-import { delimiteString, formatNumber } from '@/utils/format';
+import { chunkString, formatNumber } from '@/utils/format';
 import { defineComponent, PropType } from '@vue/composition-api';
-import Table from './Table.vue';
+import ResponsiveTable from '@/components/emulator/ResponsiveTable.vue';
 
 type TRomLine = {
   address: string;
@@ -27,6 +33,7 @@ type TRomLine = {
 };
 
 export default defineComponent({
+  components: { ResponsiveTable },
   props: {
     memory: {
       required: true,
@@ -54,16 +61,13 @@ export default defineComponent({
       const isBinary = this.displayableRadix === 2;
       return this.memory.map((memoryWord, i) => ({
         address: formatNumber(i, 16, 8, '0x'),
-        content: delimiteString(
+        content: chunkString(
           formatNumber(memoryWord, this.displayableRadix, 16, prefix),
           isBinary ? 8 : 0,
           ' '
         ),
       }));
     },
-  },
-  methods: {
-    formatNumber,
   },
   watch: {
     highlightLineIdx(): void {
@@ -75,6 +79,8 @@ export default defineComponent({
       });
     },
   },
-  components: { Table },
+  methods: {
+    formatNumber,
+  },
 });
 </script>

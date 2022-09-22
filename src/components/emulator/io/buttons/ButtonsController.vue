@@ -1,36 +1,72 @@
 <template>
   <div class="is-flex is-flex-direction-column">
-    <b-field grouped expanded class="mr-0">
-      <b-button expanded @mousedown="onButtonDown(1)" @mouseup="onButtonUp(1)"
-        >A</b-button
+    <b-field
+      grouped
+      expanded
+      class="mr-0"
+    >
+      <b-button
+        expanded
+        @mousedown="onButtonDown(1)"
+        @mouseup="onButtonUp(1)"
       >
-      <b-button expanded @mousedown="onButtonDown(2)" @mouseup="onButtonUp(2)"
-        >B</b-button
+        A
+      </b-button>
+      <b-button
+        expanded
+        @mousedown="onButtonDown(2)"
+        @mouseup="onButtonUp(2)"
       >
-      <b-button expanded @mousedown="onButtonDown(4)" @mouseup="onButtonUp(4)"
-        >C</b-button
+        B
+      </b-button>
+      <b-button
+        expanded
+        @mousedown="onButtonDown(4)"
+        @mouseup="onButtonUp(4)"
       >
-      <b-button expanded @mousedown="onButtonDown(8)" @mouseup="onButtonUp(8)"
-        >D</b-button
+        C
+      </b-button>
+      <b-button
+        expanded
+        @mousedown="onButtonDown(8)"
+        @mouseup="onButtonUp(8)"
       >
+        D
+      </b-button>
     </b-field>
-    <b-field grouped expanded>
-      <b-button expanded @mousedown="onButtonDown(16)" @mouseup="onButtonUp(16)"
-        >E</b-button
+    <b-field
+      grouped
+      expanded
+    >
+      <b-button
+        expanded
+        @mousedown="onButtonDown(16)"
+        @mouseup="onButtonUp(16)"
       >
-      <b-button expanded @mousedown="onButtonDown(32)" @mouseup="onButtonUp(32)"
-        >F</b-button
+        E
+      </b-button>
+      <b-button
+        expanded
+        @mousedown="onButtonDown(32)"
+        @mouseup="onButtonUp(32)"
       >
-      <b-button expanded @mousedown="onButtonDown(64)" @mouseup="onButtonUp(64)"
-        >G</b-button
+        F
+      </b-button>
+      <b-button
+        expanded
+        @mousedown="onButtonDown(64)"
+        @mouseup="onButtonUp(64)"
       >
+        G
+      </b-button>
       <b-button
         expanded
         @mousedown="onButtonDown(128)"
         @mouseup="onButtonUp(128)"
-        >H</b-button
-      ></b-field
-    >
+      >
+        H
+      </b-button>
+    </b-field>
   </div>
 </template>
 

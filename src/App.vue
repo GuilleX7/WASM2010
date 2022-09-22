@@ -2,67 +2,42 @@
   <div class="is-flex has-background-white-ter">
     <Multipane class="is-fullwidth">
       <div
+        ref="assemblerContainer"
         :class="{ 'is-fullwidth': !isRunningEmulation }"
         style="min-width: 200px"
-        ref="assemblerContainer"
       >
-        <Assembler
-          :isRunningEmulation="isRunningEmulation"
-          :highlightLineIdx="currentRunningAssemblyLineIdx"
+        <WasmAssembler
+          :is-running-emulation="isRunningEmulation"
+          :highlight-line-idx="currentRunningAssemblyLineIdx"
           @start-emulation="startEmulation"
           @stop-emulation="stopEmulation"
-        ></Assembler>
+        />
       </div>
-      <MultipaneResizer v-show="isRunningEmulation"></MultipaneResizer>
+      <MultipaneResizer v-show="isRunningEmulation" />
       <div
         v-show="isRunningEmulation"
         class="is-flex-grow-1"
         style="min-width: 50%"
       >
-        <Emulator
-          :isRunningEmulation="isRunningEmulation"
-          :assembledCode="loadedAssembledCode"
+        <WasmEmulator
+          :is-running-emulation="isRunningEmulation"
+          :assembled-code="loadedAssembledCode"
           @current-assembly-line-changed="onCurrentAssemblyLineChanged"
-        ></Emulator>
+        />
       </div>
     </Multipane>
   </div>
 </template>
 
-<style lang="scss">
-.layout-v .multipane-resizer {
-  margin: 0 !important;
-  left: 0 !important;
-  width: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  &:before {
-    content: '';
-    width: 3px;
-    height: 40px;
-    border-left: 1px solid #ccc;
-    border-right: 1px solid #ccc;
-  }
-
-  &:hover {
-    &:before {
-      border-color: #999;
-    }
-  }
-}
-</style>
-
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 import { Multipane, MultipaneResizer } from 'vue-multipane';
-import Assembler from './components/Assembler.vue';
-import Emulator from './components/Emulator.vue';
+import WasmAssembler from '@/components/WasmAssembler.vue';
+import WasmEmulator from '@/components/WasmEmulator.vue';
 import { loadAsm2010, TAsAssembledCode } from './wasm/asm2010';
 
 export default defineComponent({
+  components: { WasmAssembler, WasmEmulator, Multipane, MultipaneResizer },
   data: () => ({
     isRunningEmulation: false,
     loadedAssembledCode: [] as TAsAssembledCode[],
@@ -91,6 +66,31 @@ export default defineComponent({
         newRunningAssemblyLine?.matchingSourceLine;
     },
   },
-  components: { Assembler, Emulator, Multipane, MultipaneResizer },
 });
 </script>
+
+<style lang="scss">
+.layout-v .multipane-resizer {
+  margin: 0 !important;
+  left: 0 !important;
+  width: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  &:before {
+    content: '';
+    width: 3px;
+    height: 40px;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+
+  &:hover {
+    &:before {
+      border-color: #999;
+    }
+  }
+}
+</style>

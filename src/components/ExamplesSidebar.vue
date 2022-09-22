@@ -16,7 +16,7 @@
             class="is-text-ellipsable"
             :label="exampleFileName"
             @click="$emit('load', exampleFileName, exampleFile)"
-          ></b-menu-item>
+          />
         </b-menu-list>
       </b-menu>
     </div>

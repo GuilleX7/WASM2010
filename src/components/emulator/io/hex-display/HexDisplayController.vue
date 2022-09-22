@@ -1,7 +1,7 @@
 <template>
   <div class="is-flex">
-    <HexDisplay :value="firstDigit"></HexDisplay>
-    <HexDisplay :value="secondDigit"></HexDisplay>
+    <HexDisplay :value="firstDigit" />
+    <HexDisplay :value="secondDigit" />
   </div>
 </template>
 
@@ -11,6 +11,9 @@ import HexDisplay from '../atoms/HexDisplay.vue';
 import { UiHexDisplayController } from './HexDisplayController';
 
 export default defineComponent({
+  components: {
+    HexDisplay,
+  },
   props: {
     controller: {
       required: true,
@@ -27,13 +30,10 @@ export default defineComponent({
   }),
   watch: {
     uiClockTick(): void {
-        const { firstDigit, secondDigit } = this.controller.uiGetState();
-        this.firstDigit = firstDigit;
-        this.secondDigit = secondDigit;
+      const { firstDigit, secondDigit } = this.controller.uiGetState();
+      this.firstDigit = firstDigit;
+      this.secondDigit = secondDigit;
     },
-  },
-  components: {
-    HexDisplay,
   },
 });
 </script>

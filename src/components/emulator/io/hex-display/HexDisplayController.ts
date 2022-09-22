@@ -1,5 +1,6 @@
-import { IUiIoController } from '@/types';
+
 import { IoHexDisplayHandler } from '@/wasm/asm2010/io';
+import { IUiIoController } from '..';
 
 export type TUiHexDisplayState = {
   firstDigit: number;
@@ -10,7 +11,9 @@ export class UiHexDisplayController
   extends IoHexDisplayHandler
   implements IUiIoController<never, TUiHexDisplayState>
 {
-  uiUpdateState(input: never): void {}
+  uiUpdateState(): void {
+    /* Stub method */
+  }
 
   uiGetState(): TUiHexDisplayState {
     return {
