@@ -2,6 +2,7 @@
   <ResponsiveTable>
     <tr>
       <th>ROM</th>
+      <th>Disassembly</th>
       <th>Content</th>
     </tr>
     <tr
@@ -15,9 +16,8 @@
       }"
     >
       <td>{{ displayableMemoryWord.address }}</td>
-      <td class="has-text-right">
-        {{ displayableMemoryWord.content }}
-      </td>
+      <td>{{ displayableMemoryWord.disassembly }}</td>
+      <td>{{ displayableMemoryWord.content }}</td>
     </tr>
   </ResponsiveTable>
 </template>
@@ -26,9 +26,11 @@
 import { chunkString, formatNumber } from '@/utils/format';
 import { defineComponent, PropType } from '@vue/composition-api';
 import ResponsiveTable from '@/components/emulator/ResponsiveTable.vue';
+import { asDisassemble } from '@/wasm/asm2010';
 
 type TRomLine = {
   address: string;
+  disassembly: string;
   content: string;
 };
 
@@ -61,6 +63,7 @@ export default defineComponent({
       const isBinary = this.displayableRadix === 2;
       return this.memory.map((memoryWord, i) => ({
         address: formatNumber(i, 16, 8, '0x'),
+        disassembly: asDisassemble(memoryWord),
         content: chunkString(
           formatNumber(memoryWord, this.displayableRadix, 16, prefix),
           isBinary ? 8 : 0,

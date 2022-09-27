@@ -72,6 +72,7 @@
         <div class="asm--emulator-signals has-background-white">
           <SignalsViewer
             :signals="signals"
+            :microop="microop"
             :signals-per-row="4"
           />
         </div>
@@ -177,6 +178,7 @@ export default defineComponent({
       }),
       {}
     ) as TCsSignals,
+    microop: 0,
     stopped: false,
     isClockRunning: false,
     clockTimerId: 0,
@@ -232,12 +234,13 @@ export default defineComponent({
       this.updateUiToMatchCsStatus(csGetStatus());
     },
     updateUiToMatchCsStatus(
-      { ram, reg, signals, stopped }: TCsStatus,
+      { ram, reg, signals, microop, stopped }: TCsStatus,
       uiClockTick: number = performance.now()
     ): void {
       this.ram = ram;
       this.registers = reg;
       this.signals = signals;
+      this.microop = microop;
       this.stopped = stopped;
       this.$emit(
         'current-assembly-line-changed',

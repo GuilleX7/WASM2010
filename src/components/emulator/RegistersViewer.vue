@@ -9,9 +9,7 @@
       :key="displayableRegister.name"
     >
       <td>{{ displayableRegister.name }}</td>
-      <td class="has-text-right">
-        {{ displayableRegister.content }}
-      </td>
+      <td>{{ displayableRegister.content }}</td>
     </tr>
   </ResponsiveTable>
 </template>

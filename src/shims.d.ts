@@ -20,3 +20,7 @@ declare module 'vue-multipane' {
   const MultipaneResizer: VueConstructor;
   export { Multipane, MultipaneResizer };
 }
+
+declare module 'buefy' {
+  export default {} as PluginObject
+}
