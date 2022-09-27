@@ -144,6 +144,7 @@ let as_parse_source: (
 ) => number;
 let as_parse_assemble: (pinfo: number, stop_on_error: boolean) => number;
 let as_parse_free: (pinfo: number) => void;
+let as_disassemble_sentence: (raw_sentence: number) => number;
 let trace_log_get: (log: number) => number;
 let cs_init: (cs: number) => boolean;
 let wasm_set_custom_io_functions: (cs: number) => void;
@@ -257,6 +258,7 @@ export type TCsStatus = {
     ram: number[];
     reg: TCsRegisters;
     signals: TCsSignals;
+    microop: number;
     stopped: boolean;
 };
 
@@ -269,6 +271,8 @@ export async function loadAsm2010(): Promise<void> {
     as_parse_source = exports.as_parse_source as typeof as_parse_source;
     as_parse_assemble = exports.as_parse_assemble as typeof as_parse_assemble;
     as_parse_free = exports.as_parse_free as typeof as_parse_free;
+    as_disassemble_sentence =
+        exports.as_disassemble_sentence as typeof as_disassemble_sentence;
     trace_log_get = exports.trace_log_get as typeof trace_log_get;
     cs_init = exports.cs_init as typeof cs_init;
     cs_hard_reset = exports.cs_hard_reset as typeof cs_hard_reset;
@@ -324,6 +328,13 @@ export function asAssemble(sourceAssembly: string): TAsParseResult {
     };
 }
 
+export function asDisassemble(machineCode: number): string {
+    const pointerToDisassembly = as_disassemble_sentence(machineCode);
+    const disassembly = jasm.readString(pointerToDisassembly);
+    free(pointerToDisassembly);
+    return disassembly;
+}
+
 export function csLoadAndStart(machineCode: number[]): void {
     const machine_code_ptr = malloc(
         machineCode.length * Jasm.getTypeData(JasmType.ushort).size
@@ -370,6 +381,7 @@ export function csGetStatus(): TCsStatus {
             }),
             {}
         ) as TCsSignals,
+        microop: cs().microop[$getValue](),
         stopped: cs().stopped[$getValue](),
     };
 }

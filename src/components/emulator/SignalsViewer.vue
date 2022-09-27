@@ -3,7 +3,7 @@
     class="is-fullwidth is-fullheight asm--emulator-signals-content is-flex is-flex-direction-column"
   >
     <div class="asm--emulator-signals-header">
-      Signals
+      Signals (Cycle {{ microop + 1 }})
     </div>
     <div
       v-for="(
@@ -16,7 +16,7 @@
         v-for="displayableSignal in displayableSignalGroup"
         :key="displayableSignal.name"
         :class="{ 'has-background-info-light': displayableSignal.active }"
-        class="is-flex p-2 has-text-centered is-fullwidth is-fullheight is-justify-content-center is-align-items-center"
+        class="is-flex p-2 has-text-centered is-fullwidth is-fullheight is-justify-content-center is-align-items-center asm--emulator-signals-cell"
       >
         <span>{{ displayableSignal.name }}</span>
       </div>
@@ -38,6 +38,10 @@ export default defineComponent({
     signals: {
       required: true,
       type: Object as PropType<TCsSignals>,
+    },
+    microop: {
+      required: true,
+      type: Number,
     },
   },
   computed: {
@@ -97,6 +101,7 @@ export default defineComponent({
   overflow: auto;
 
   .asm--emulator-signals-header {
+    background-color: $white;
     color: $dark;
     position: sticky;
     top: 0;
@@ -109,9 +114,13 @@ export default defineComponent({
   }
 
   .asm--emulator-signals-row {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(75px, 1fr));
+    display: flex;
     font-family: monospace;
+  }
+
+  .asm--emulator-signals-cell {
+    flex-grow: 1;
+    width: 100%;
   }
 }
 </style>
