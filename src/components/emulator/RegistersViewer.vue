@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { chunkString, formatNumber } from '@/utils/format';
-import { CsRegisterName, TCsRegisters } from '@/wasm/asm2010';
+import { CsRegisterName, TCsRegisters } from '@/asm2010/wrapper';
 import { defineComponent, PropType } from '@vue/composition-api';
 import ResponsiveTable from '@/components/emulator/ResponsiveTable.vue';
 

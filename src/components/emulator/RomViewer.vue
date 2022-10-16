@@ -26,7 +26,7 @@
 import { chunkString, formatNumber } from '@/utils/format';
 import { defineComponent, PropType } from '@vue/composition-api';
 import ResponsiveTable from '@/components/emulator/ResponsiveTable.vue';
-import { asDisassemble } from '@/wasm/asm2010';
+import { asDisassemble } from '@/asm2010/wrapper';
 
 type TRomLine = {
   address: string;

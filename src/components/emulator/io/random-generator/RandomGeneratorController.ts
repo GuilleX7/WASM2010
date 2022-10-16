@@ -1,4 +1,4 @@
-import { IoRandomGeneratorHandler } from '@/wasm/asm2010/io';
+import { IoRandomGeneratorHandler } from '@/asm2010/wrapper/io';
 import { IUiIoController }  from '..';
 
 export class UiRandomGeneratorController

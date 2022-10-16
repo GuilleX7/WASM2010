@@ -29,7 +29,7 @@
 
 <script lang="ts">
 import { formatNumber } from '@/utils/format';
-import { CS_RAM_SIZE } from '@/wasm/asm2010';
+import { CS_RAM_SIZE } from '@/asm2010/wrapper';
 import { defineComponent, PropType } from '@vue/composition-api';
 
 type TRamWord = {

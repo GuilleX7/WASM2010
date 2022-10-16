@@ -1,5 +1,13 @@
 <template>
-  <div class="is-flex has-background-white-ter">
+  <b-loading
+    v-if="!isLoaded"
+    :is-full-page="true"
+    :active="!isLoaded"
+  />
+  <div
+    v-else
+    class="is-flex has-background-white-ter"
+  >
     <Multipane class="is-fullwidth">
       <div
         ref="assemblerContainer"
@@ -34,20 +42,20 @@ import { defineComponent } from '@vue/composition-api';
 import { Multipane, MultipaneResizer } from 'vue-multipane';
 import WasmAssembler from '@/components/WasmAssembler.vue';
 import WasmEmulator from '@/components/WasmEmulator.vue';
-import { loadAsm2010, TAsAssembledCode } from './wasm/asm2010';
+import { loadAsm2010, TAsAssembledCode } from '@/asm2010/wrapper';
 
 export default defineComponent({
   components: { WasmAssembler, WasmEmulator, Multipane, MultipaneResizer },
   data: () => ({
+    isLoaded: false,
     isRunningEmulation: false,
     loadedAssembledCode: [] as TAsAssembledCode[],
     currentRunningAssemblyLineIdx: undefined as number | undefined,
   }),
   computed: {},
   async mounted() {
-    const loadingComponent = this.$buefy.loading.open({});
     await loadAsm2010();
-    loadingComponent.close();
+    this.isLoaded = true;
   },
   methods: {
     startEmulation(assembledCode: TAsAssembledCode[]): void {

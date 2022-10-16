@@ -25,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { CsSignalName, TCsSignals } from '@/wasm/asm2010';
+import { CsSignalName, TCsSignals } from '@/asm2010/wrapper';
 import { defineComponent, PropType } from '@vue/composition-api';
 
 type TSignal = {

@@ -172,7 +172,7 @@ import {
   stringFilledWith,
 } from '@/utils/format';
 import ExamplesSidebar from '@/components/ExamplesSidebar.vue';
-import { TAsAssembledCode, asAssemble } from '@/wasm/asm2010';
+import { TAsAssembledCode, asAssemble } from '@/asm2010/wrapper';
 import { positiveMod } from '@/utils/math';
 import { downloadFile } from '@/utils/file';
 import { defineComponent } from '@vue/composition-api';
@@ -378,7 +378,7 @@ export default defineComponent({
         if (!eventInput) {
           return;
         }
-        const [file] = eventInput.files ?? [];
+        const file = eventInput.files?.item(0);
         if (!file) {
           return;
         }

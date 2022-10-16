@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { csRegisterIoHandlers } from '@/wasm/asm2010/io';
+import { csRegisterIoHandlers } from '@/asm2010/wrapper/io';
 import { defineComponent, PropType } from '@vue/composition-api';
 import {
   IoComponentId,

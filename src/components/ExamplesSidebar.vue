@@ -36,7 +36,7 @@ export default defineComponent({
   },
   data: () => {
     const exampleFilesContext = require.context(
-      '@/wasm/asm2010/examples',
+      '@/asm2010/examples',
       true,
       /.asm$/
     );
