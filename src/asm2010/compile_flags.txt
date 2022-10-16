@@ -1,0 +1,11 @@
+--target=wasm32-wasi
+--sysroot=wasi-sysroot
+-O3
+-Wall
+-nostartfiles
+-fvisibility=hidden
+-Wl,--no-entry
+-Wl,--export-dynamic
+-Wl,--export=malloc
+-Wl,--export=free
+-Wl,--import-undefined

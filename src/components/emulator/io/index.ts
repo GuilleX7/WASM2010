@@ -1,5 +1,5 @@
 import { TCtor } from '@/types';
-import { ICsIoHandler } from '@/wasm/asm2010/io';
+import { ICsIoHandler } from '@/asm2010/wrapper/io';
 import { UiButtonsController } from './buttons/ButtonsController';
 import { UiHexDisplayController } from './hex-display/HexDisplayController';
 import { UiKeyboardController } from './keyboard/KeyboardController';

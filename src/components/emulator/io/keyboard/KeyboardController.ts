@@ -1,4 +1,4 @@
-import { IoKeyboardHandler } from '@/wasm/asm2010/io';
+import { IoKeyboardHandler } from '@/asm2010/wrapper/io';
 import { IUiIoController } from '..';
 
 export class UiKeyboardController

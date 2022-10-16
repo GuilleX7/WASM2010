@@ -1,4 +1,4 @@
-import { IoButtonsHandler } from '@/wasm/asm2010/io';
+import { IoButtonsHandler } from '@/asm2010/wrapper/io';
 import { IUiIoController } from '..';
 
 export enum TUiButtonsEventName {

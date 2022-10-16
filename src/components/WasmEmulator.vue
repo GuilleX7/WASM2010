@@ -129,7 +129,7 @@ import {
   TCsRegisters,
   TCsSignals,
   TCsStatus,
-} from '@/wasm/asm2010';
+} from '@/asm2010/wrapper';
 import { defineComponent, PropType } from '@vue/composition-api';
 import RomViewer from '@/components/emulator/RomViewer.vue';
 import RamViewer from '@/components/emulator/RamViewer.vue';

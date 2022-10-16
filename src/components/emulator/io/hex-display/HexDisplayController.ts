@@ -1,5 +1,5 @@
 
-import { IoHexDisplayHandler } from '@/wasm/asm2010/io';
+import { IoHexDisplayHandler } from '@/asm2010/wrapper/io';
 import { IUiIoController } from '..';
 
 export type TUiHexDisplayState = {
