@@ -35,7 +35,7 @@
                 />
               </b-field>
               <b-field
-                label="Interface refresh speed (Hz)"
+                label="UI refresh frequency (Hz)"
                 expanded
                 :type="{ 'is-danger': !isUiRefreshFrequencyValid }"
                 :message="{
@@ -55,7 +55,7 @@
               </b-switch>
             </b-field>
             <b-field
-              label="Max instructions before halting block step"
+              label="Max. instructions before halting block step"
               :type="{
                 'is-danger': !isMaxInstructionsBeforeHaltingBlockStepValid,
               }"
@@ -140,6 +140,24 @@
                 type="number"
                 expanded
               />
+            </b-field>
+            <b-field>
+              <template #label>
+                Reduce visual motion
+                <b-tooltip
+                  label="When this option is enabled, some views will not track pointers such as the program counter (PC) or MAR"
+                  position="is-top"
+                  :multilined="true"
+                >
+                  <b-icon
+                    icon="information-outline"
+                    size="is-small"
+                  />
+                </b-tooltip>
+              </template>
+              <b-switch v-model="newSettings.reduceVisualMotion">
+                {{ newSettings.reduceVisualMotion ? 'Yes' : 'No' }}
+              </b-switch>
             </b-field>
           </b-tab-item>
 
@@ -264,7 +282,6 @@ export default defineComponent({
       activeTab: undefined as unknown,
       newComponentAddress: '00',
       newComponentId: IoComponentId.Buttons,
-      areNewSettingsDirty: false,
     };
   },
   computed: {
@@ -306,7 +323,7 @@ export default defineComponent({
     mappedIoComponents(): TMappedIoComponent[] {
       return Object.entries(this.newSettings.mappedIoComponents).map(
         ([address, componentId]) => ({
-          address: Number.parseInt(address),
+          address: parseInt(address),
           componentId: componentId as IoComponentId,
         })
       );

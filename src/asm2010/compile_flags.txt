@@ -1,5 +1,5 @@
 --target=wasm32-wasi
---sysroot=wasi-sysroot
+--sysroot=C:\Program Files\LLVM\share\wasi-sysroot
 -O3
 -Wall
 -nostartfiles

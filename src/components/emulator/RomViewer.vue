@@ -12,7 +12,7 @@
       :class="{
         [!isStopped
           ? 'has-background-info-light'
-          : 'has-background-primary-light']: i === highlightLineIdx,
+          : 'has-background-primary-light']: i === currentInstructionIdx,
       }"
     >
       <td>{{ displayableMemoryWord.address }}</td>
@@ -41,7 +41,7 @@ export default defineComponent({
       required: true,
       type: Array as PropType<number[]>,
     },
-    highlightLineIdx: {
+    currentInstructionIdx: {
       required: false,
       default: null,
       type: Number,
@@ -73,9 +73,9 @@ export default defineComponent({
     },
   },
   watch: {
-    highlightLineIdx(): void {
+    currentInstructionIdx(): void {
       (this.$refs.lines as HTMLTableRowElement[])[
-        this.highlightLineIdx
+        this.currentInstructionIdx
       ]?.scrollIntoView({
         behavior: 'auto',
         block: 'center',

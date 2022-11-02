@@ -13,9 +13,7 @@ const config = {
   },
   devServer: {
     hot: true,
-    open: false,
-    host: '0.0.0.0',
-    port: 8090,
+    port: 80,
   },
   plugins: [
     new VueLoaderPlugin(),
@@ -85,6 +83,7 @@ const config = {
     alias: {
       '@': path.resolve(__dirname, 'src/'),
     },
+    symlinks: false,
   },
 };
 

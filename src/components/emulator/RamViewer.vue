@@ -14,10 +14,13 @@
           :key="`c${displayableByte.address}`"
           ref="words"
           :class="{
-            first: byteIdxInRow === 1,
+            first: byteIdxInRow === 2,
             last: byteIdxInRow === 16,
             'has-background-info-light':
-              displayableByte.address === highlightWordIdx,
+              displayableByte.address === currentAccessedWordIdx,
+            'has-background-primary-light':
+              displayableByte.address === stackPointerWordIdx,
+            'has-text-danger': ioMappedAddresses.has(displayableByte.address),
           }"
         >
           {{ displayableByte.formattedContent }}
@@ -49,10 +52,20 @@ export default defineComponent({
       required: true,
       type: Array as PropType<number[]>,
     },
-    highlightWordIdx: {
+    currentAccessedWordIdx: {
       required: false,
-      default: 0,
+      default: null,
       type: Number,
+    },
+    stackPointerWordIdx: {
+      required: false,
+      default: null,
+      type: Number,
+    },
+    ioMappedAddresses: {
+      required: false,
+      default: () => new Set(),
+      type: Set as PropType<Set<number>>,
     },
     displayableRadix: {
       required: false,
@@ -94,9 +107,9 @@ export default defineComponent({
     },
   },
   watch: {
-    highlightWordIdx(): void {
+    currentAccessedWordIdx(): void {
       (this.$refs.words as HTMLTableRowElement[])[
-        this.highlightWordIdx
+        this.currentAccessedWordIdx
       ]?.scrollIntoView({
         behavior: 'auto',
         block: 'center',

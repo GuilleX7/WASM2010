@@ -10,6 +10,7 @@ export type TEmulatorSettings = {
   ramDisplayableRadix: number;
   ramWordsPerRow: number;
   mappedIoComponents: Record<number, IoComponentId>;
+  reduceVisualMotion: boolean;
 };
 
 export type TMappedIoComponent = {

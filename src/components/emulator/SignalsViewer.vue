@@ -55,12 +55,6 @@ export default defineComponent({
           CsSignalName.WPC,
         ],
         [
-          CsSignalName.CSP,
-          CsSignalName.RSP,
-          CsSignalName.ISP,
-          CsSignalName.DSP,
-        ],
-        [
           CsSignalName.WMDR,
           CsSignalName.IOMDR,
           CsSignalName.WMAR,
@@ -73,6 +67,12 @@ export default defineComponent({
           CsSignalName.INM,
           CsSignalName.SRW,
           CsSignalName.WREG,
+        ],
+        [
+          CsSignalName.CSP,
+          CsSignalName.RSP,
+          CsSignalName.ISP,
+          CsSignalName.DSP,
         ],
         [
           CsSignalName.ALUOP3,
@@ -105,7 +105,6 @@ export default defineComponent({
     color: $dark;
     position: sticky;
     top: 0;
-    z-index: 2;
     font-weight: 600;
     padding: 0.25rem 0.5rem;
     border: 2px solid $grey-lighter;

@@ -59,7 +59,8 @@ bool trace_log_printf(trace_log *log, char const *const format, ...) {
   }
   va_start(va, format);
   if (vsnprintf(log->trace, log->maximum_trace_space, format, va) < 0) {
-    goto fail;
+    va_end(va);
+    return false;
   }
   trace_length = strlen(log->trace);
   if (trace_length <= log->available_log_space) {
@@ -69,7 +70,6 @@ bool trace_log_printf(trace_log *log, char const *const format, ...) {
     return true;
   }
 
-fail:
   va_end(va);
   return false;
 }
@@ -78,8 +78,8 @@ bool trace_log_is_empty(trace_log *log) {
   return !log || !log->log || !*log->log;
 }
 
-char *trace_log_get(trace_log *log) {
-  if (!log || !log->log) {
+char const *trace_log_get(trace_log *log) {
+  if (!log) {
     return 0;
   }
   return log->log;

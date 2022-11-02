@@ -13,9 +13,8 @@
 #define CS_INS_FORMAT_D 3
 #define CS_INS_FORMAT_E 4
 
+#define CS_INS_NAME_MAX_LENGTH 4 
 #define CS_INS_INM_MAX_VALUE 0xFFu
-
-#define CS_INS_NAME_MAX_LENGTH 4
 
 #define CS_JMP_COND_EQUAL 0u
 #define CS_JMP_COND_LOWER 1u
@@ -23,11 +22,11 @@
 #define CS_JMP_COND_SLOWER 3u
 
 #define CS_GET_OPCODE(sentence) ((sentence & 0xF800u) >> 11)
-#define CS_GET_JMP_CONDITION(sentence) ((sentence & 0x700u) >> 8)
-#define CS_GET_ARG_A(sentence) CS_GET_JMP_CONDITION(sentence)
-#define CS_GET_REG_A(sentence) CS_GET_ARG_A(sentence)
+#define CS_GET_ARG_A(sentence) ((sentence & 0x700u) >> 8) 
 #define CS_GET_ARG_B(sentence) (sentence & 0xFFu)
+#define CS_GET_REG_A(sentence) CS_GET_ARG_A(sentence)
 #define CS_GET_REG_B(sentence) (CS_GET_ARG_B(sentence) & 0x7u)
+#define CS_GET_JMP_CONDITION(sentence) CS_GET_ARG_A(sentence)
 #define CS_GET_RAW_SENTENCE(lsbyte, msbyte)                                    \
   (((unsigned short)msbyte << 8) + (unsigned short)lsbyte)
 
@@ -63,7 +62,7 @@ enum cs_instruction_idx {
   CS_INS_I_BRVS,
   CS_INS_I_BRLT,
   /* Array length */
-  CS_INS_LEN
+  CS_INS_LENGTH
 };
 typedef enum cs_instruction_idx cs_instruction_idx;
 
@@ -76,12 +75,12 @@ struct cs_instruction {
   cs_instruction_idx index;
   int format;
   unsigned char opcode;
-  bool exec;
+  bool is_executable;
 };
 typedef struct cs_instruction cs_instruction;
 
 /** @brief Name and opcode for each instruction */
-extern cs_instruction const cs_ins_list[CS_INS_LEN];
+extern cs_instruction const cs_ins_list[CS_INS_LENGTH];
 
 /**
         @brief Initializes the hash table. Searching names will be allowed from
