@@ -6,41 +6,44 @@
 #include "cs2010.h"
 #include "cs_instructions.h"
 
-static size_t cs_io_read_stub(size_t address) { return -1; }
+static size_t cs_io_read_stub(size_t address) {
+  return CS_IO_READ_NOT_CONTROLLED;
+}
 
 static bool cs_io_write_stub(size_t address, unsigned char content) {
-  return false;
+  return CS_IO_WRITE_NOT_CONTROLLED;
 }
+
+cs2010 *cs_create() { return malloc(sizeof(cs2010)); }
 
 bool cs_init(cs2010 *cs) {
   if (!cs) {
     return false;
   }
 
-  cs->mem.rom = malloc(sizeof *cs->mem.rom * CS_ROM_SIZE);
-  if (!cs->mem.rom) {
+  cs->memory.rom = malloc(sizeof *cs->memory.rom * CS_ROM_SIZE);
+  if (!cs->memory.rom) {
     return false;
   }
 
-  cs->mem.ram = malloc(sizeof *cs->mem.ram * CS_RAM_SIZE);
-  if (!cs->mem.ram) {
-    free(cs->mem.rom);
+  cs->memory.ram = malloc(sizeof *cs->memory.ram * CS_RAM_SIZE);
+  if (!cs->memory.ram) {
+    free(cs->memory.rom);
     return false;
   }
 
-  cs->reg.regfile[0] = &cs->reg.r0;
-  cs->reg.regfile[1] = &cs->reg.r1;
-  cs->reg.regfile[2] = &cs->reg.r2;
-  cs->reg.regfile[3] = &cs->reg.r3;
-  cs->reg.regfile[4] = &cs->reg.r4;
-  cs->reg.regfile[5] = &cs->reg.r5;
-  cs->reg.regfile[6] = &cs->reg.r6;
-  cs->reg.regfile[7] = &cs->reg.r7;
+  cs->registers.regfile[0] = &cs->registers.r0;
+  cs->registers.regfile[1] = &cs->registers.r1;
+  cs->registers.regfile[2] = &cs->registers.r2;
+  cs->registers.regfile[3] = &cs->registers.r3;
+  cs->registers.regfile[4] = &cs->registers.r4;
+  cs->registers.regfile[5] = &cs->registers.r5;
+  cs->registers.regfile[6] = &cs->registers.r6;
+  cs->registers.regfile[7] = &cs->registers.r7;
 
   cs->io_read_fn = cs_io_read_stub;
   cs->io_write_fn = cs_io_write_stub;
 
-  cs_hard_reset(cs);
   return true;
 }
 
@@ -50,49 +53,55 @@ void cs_set_io_functions(cs2010 *cs, io_read_fn_t io_read_fn,
   cs->io_write_fn = io_write_fn;
 }
 
-void cs_hard_reset(cs2010 *cs) {
-  cs_clear_memory(cs, CS_CLEAR_RAM | CS_CLEAR_ROM);
+void cs_hard_reset(cs2010 *cs, bool clear_rom) {
+  unsigned char flags = CS_CLEAR_RAM;
+  if (clear_rom) {
+    flags |= CS_CLEAR_ROM;
+  }
+  cs_clear_memory(cs, flags);
   cs_reset_registers(cs);
-  cs->stopped = false;
+  cs_fetch(cs);
 }
 
 void cs_soft_reset(cs2010 *cs) {
-  cs->reg.pc = 0;
-  cs->reg.sp = 0xFF;
+  cs->registers.pc = 0;
+  cs->registers.sp = 0xFF;
   cs->stopped = false;
+  cs_fetch(cs);
 }
 
 void cs_clear_memory(cs2010 *cs, unsigned char flags) {
   if (flags & CS_CLEAR_ROM) {
-    memset(cs->mem.rom, 0, CS_ROM_SIZE * sizeof *cs->mem.rom);
+    memset(cs->memory.rom, 0, CS_ROM_SIZE * sizeof *cs->memory.rom);
   }
   if (flags & CS_CLEAR_RAM) {
-    memset(cs->mem.ram, 0, CS_RAM_SIZE * sizeof *cs->mem.ram);
+    memset(cs->memory.ram, 0, CS_RAM_SIZE * sizeof *cs->memory.ram);
   }
 }
 
 void cs_reset_registers(cs2010 *cs) {
-  cs->reg.signals = CS_SIGNALS_NONE;
-  cs->reg.ir = 0;
-  cs->reg.r0 = 0;
-  cs->reg.r1 = 0;
-  cs->reg.r2 = 0;
-  cs->reg.r3 = 0;
-  cs->reg.r4 = 0;
-  cs->reg.r5 = 0;
-  cs->reg.r6 = 0;
-  cs->reg.r7 = 0;
-  cs->reg.sp = 0xFF;
-  cs->reg.pc = 0;
-  cs->reg.ac = 0;
-  cs->reg.sr = 0;
-  cs->reg.mdr = 0;
-  cs->reg.mar = 0;
+  cs->registers.signals = CS_SIGNALS_NONE;
+  cs->registers.ir = 0;
+  cs->registers.r0 = 0;
+  cs->registers.r1 = 0;
+  cs->registers.r2 = 0;
+  cs->registers.r3 = 0;
+  cs->registers.r4 = 0;
+  cs->registers.r5 = 0;
+  cs->registers.r6 = 0;
+  cs->registers.r7 = 0;
+  cs->registers.sp = 0xFF;
+  cs->registers.pc = 0;
+  cs->registers.ac = 0;
+  cs->registers.sr = 0;
+  cs->registers.mdr = 0;
+  cs->registers.mar = 0;
+  cs->stopped = false;
 }
 
-int cs_load_and_check(cs2010 *cs, unsigned short *sentences,
-                      size_t sentences_length) {
-  size_t i = 0;
+int cs_load_program(cs2010 *cs, unsigned short *sentences,
+                    size_t sentences_length) {
+  size_t i;
 
   if (!sentences) {
     return CS_FAILED;
@@ -102,34 +111,38 @@ int cs_load_and_check(cs2010 *cs, unsigned short *sentences,
     return CS_NOT_ENOUGH_ROM;
   }
 
-  for (; i < sentences_length; i++) {
-    if (!cs_ins_list[CS_GET_OPCODE(sentences[i])].exec) {
+  for (i = 0; i < sentences_length; i++) {
+    if (!cs_ins_list[CS_GET_OPCODE(sentences[i])].is_executable) {
       return CS_INVALID_INSTRUCTIONS;
     }
-    cs->mem.rom[i] = sentences[i];
   }
 
+  cs_clear_memory(cs, CS_CLEAR_RAM | CS_CLEAR_ROM);
+  cs_reset_registers(cs);
+  memcpy(cs->memory.rom, sentences, sentences_length);
   cs_fetch(cs);
   return CS_SUCCESS;
 }
 
 void cs_microfetch(cs2010 *cs) {
-  cs->microop++;
-  cs->reg.signals = cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].signals[cs->microop];
+  cs->registers.signals =
+      cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].signals[cs->microop++];
 }
 
 void cs_fetch(cs2010 *cs) {
+  cs->registers.ir = cs->memory.rom[cs->registers.pc++];
   cs->microop = 0;
-  cs->reg.ir = cs->mem.rom[cs->reg.pc];
-  cs->reg.signals = cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].signals[cs->microop];
-  cs->reg.pc++;
+  cs->registers.signals =
+      cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].signals[cs->microop];
 }
 
 void cs_microstep(cs2010 *cs) {
-  cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].microstepper(cs);
+  cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].microstepper(cs);
 }
 
-void cs_step(cs2010 *cs) { cs_ins_list[CS_GET_OPCODE(cs->reg.ir)].stepper(cs); }
+void cs_step(cs2010 *cs) {
+  cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].stepper(cs);
+}
 
 void cs_fullstep(cs2010 *cs) {
   if (!cs->microop) {
@@ -147,11 +160,11 @@ bool cs_blockstep(cs2010 *cs, size_t max_instructions) {
   cs_fullstep(cs);
   max_instructions--;
 
-  opcode = CS_GET_OPCODE(cs->reg.ir);
+  opcode = CS_GET_OPCODE(cs->registers.ir);
   while (opcode != CS_INS_I_JMP && opcode != CS_INS_I_BRXX &&
          opcode != CS_INS_I_CALL && !cs->stopped) {
     cs_step(cs);
-    opcode = CS_GET_OPCODE(cs->reg.ir);
+    opcode = CS_GET_OPCODE(cs->registers.ir);
 
     max_instructions--;
     if (!max_instructions) {
@@ -167,11 +180,11 @@ void cs_free(cs2010 *cs) {
     return;
   }
 
-  if (cs->mem.rom) {
-    free(cs->mem.rom);
+  if (cs->memory.rom) {
+    free(cs->memory.rom);
   }
 
-  if (cs->mem.ram) {
-    free(cs->mem.ram);
+  if (cs->memory.ram) {
+    free(cs->memory.ram);
   }
 }

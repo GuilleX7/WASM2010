@@ -17,6 +17,8 @@ bool read_upper_line(char *line, size_t max_length, char const *const str,
   }
   line[i] = '\0';
 
+  for (; str[*offset] != '\0' && str[*offset] != '\n'; (*offset)++);
+
   if (str[*offset] == '\n') {
     (*offset)++;
     return true;

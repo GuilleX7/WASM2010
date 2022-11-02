@@ -59,13 +59,13 @@ bool trace_log_printf(trace_log *log, char const *format, ...);
  * @param log Pointer to the trace log
  * @return true if log is empty, false otherwise
  */
-__attribute__((visibility("default"))) bool trace_log_is_empty(trace_log *log);
+bool trace_log_is_empty(trace_log *log);
 
 /**
  * @brief Gets the current log
  * @param log Pointer to the trace log
  * @return Pointer to the log if success, null pointer otherwise
  */
-__attribute__((visibility("default"))) char *trace_log_get(trace_log *log);
+char const *trace_log_get(trace_log *log);
 
 #endif /* TRACE_LOG_H */

@@ -16,15 +16,15 @@
 
 /**
  * @brief Skips contiguous space characters
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @return PARSE_LINE_END if line ends with spaces,
  *          PARSE_LINE_KEEP otherwise
  */
-int skip_spaces(char const **lineptr);
+int skip_spaces(char const **line_tracker);
 
 /**
  * @brief Searchs for a given symbol and skips it
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param ch Character to be looked for
  * @param skip_spaces Pointer to the space skipping function
  * @return PARSE_LINE_KEEP if character is found and there's text
@@ -32,19 +32,19 @@ int skip_spaces(char const **lineptr);
  *          PARSE_LINE_END if either the character wasn't found or
  *          there is no text left after it
  */
-int search_character(char const **lineptr, char ch,
+int search_character(char const **line_tracker, char ch,
                      int skip_spaces(char const **));
 
 /**
  * @brief Retrieves the longest alpha-numeric identifier from the
  *      pointer
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param max_length Maximum number of allowed characters
  * @param skip_spaces Pointer to the space skipping function
  * @return Pointer to a new alpha-numeric identifier if possible,
  *          null pointer otherwise
  */
-char *retrieve_alnum_identifier(char const **lineptr, size_t max_length,
+char *retrieve_alnum_identifier(char const **line_tracker, size_t max_length,
                                 int skip_spaces(char const **));
 
 /**
@@ -54,7 +54,7 @@ char *retrieve_alnum_identifier(char const **lineptr, size_t max_length,
  *        (range [-MAX_VALUE/2, MAX_VALUE/2-1], but output will always be
  *        size_t, therefore unsigned. It also can be hexadecimal
  *        starting by '0X' or binary starting by '0B'.
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param status Pointer to the status that will be set to
  *              RETRIEVE_VALUE_OK if success,
  *              RETRIEVE_VALUE_OUTOFBOUNDS if value was out of range or
@@ -63,12 +63,12 @@ char *retrieve_alnum_identifier(char const **lineptr, size_t max_length,
  * @param skip_spaces Pointer to the space skipping function
  * @return Retrieved value if status is OK, garbage value otherwise
  */
-size_t retrieve_value(char const **lineptr, int *status, size_t max_value,
+size_t retrieve_value(char const **line_tracker, int *status, size_t max_value,
                       int skip_spaces(char const **));
 
 /**
  * @brief Gets a valid hexadecimal value that fits in the given range.
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param status Pointer to the status that will be set to
  *              RETRIEVE_VALUE_OK if success,
  *              RETRIEVE_VALUE_OUTOFBOUNDS if value was out of range or
@@ -76,12 +76,12 @@ size_t retrieve_value(char const **lineptr, int *status, size_t max_value,
  * @param max_value Maximum value allowed
  * @return Retrieved value if status is OK, garbage value otherwise
  */
-size_t retrieve_value_hexadecimal(char const **lineptr, int *status,
+size_t retrieve_value_hexadecimal(char const **line_tracker, int *status,
                                   size_t max_value);
 
 /**
  * @brief Gets a valid binary value that fits in the given range.
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param status Pointer to the status that will be set to
  *              RETRIEVE_VALUE_OK if success,
  *              RETRIEVE_VALUE_OUTOFBOUNDS if value was out of range or
@@ -89,7 +89,7 @@ size_t retrieve_value_hexadecimal(char const **lineptr, int *status,
  * @param max_value Maximum value allowed
  * @return Retrieved value if status is OK, garbage value otherwise
  */
-size_t retrieve_value_binary(char const **lineptr, int *status,
+size_t retrieve_value_binary(char const **line_tracker, int *status,
                              size_t max_value);
 
 /**
@@ -97,7 +97,7 @@ size_t retrieve_value_binary(char const **lineptr, int *status,
  *        Input can be unsigned (range [0, MAX_VALUE]), or signed
  *        (range [-MAX_VALUE/2, MAX_VALUE/2-1], but output will always be
  *        size_t, therefore unsigned.
- * @param lineptr Pointer to pointer to the line string
+ * @param line_tracker Pointer to pointer to the line string
  * @param status Pointer to the status that will be set to
  *              RETRIEVE_VALUE_OK if success,
  *              RETRIEVE_VALUE_OUTOFBOUNDS if value was out of range or
@@ -105,7 +105,7 @@ size_t retrieve_value_binary(char const **lineptr, int *status,
  * @param max_value Maximum value allowed
  * @return Retrieved value if status is OK, garbage value otherwise
  */
-size_t retrieve_value_decimal(char const **lineptr, int *status,
+size_t retrieve_value_decimal(char const **line_tracker, int *status,
                               size_t max_value);
 
 /**

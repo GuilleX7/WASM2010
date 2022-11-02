@@ -21,7 +21,6 @@
       th {
         position: sticky;
         top: 0;
-        z-index: 2;
         font-weight: 600;
         padding: 0.25rem 0.5rem;
         border: 2px solid $grey-lighter;

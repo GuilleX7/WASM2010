@@ -9,9 +9,9 @@ main:   LDI R0, HEX_DISPLAY
         LDI R1, KEYBOARD
 loop:   LD R2, (R1)          ; Get pressed key
 ascii:  SUBI R2, ASCII_START ; Check if the pressed key is an ASCII digit
-        BRLT loop
+        BRLO loop
         CPI R2, 10
-        BRLT show
+        BRLO show
         JMP loop
 
 show:   LD R3, (R0)          ; Get the currently displayed number

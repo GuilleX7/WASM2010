@@ -19,7 +19,7 @@
               :ui-clock-tick="uiClockTick"
             />
             <div v-else>
-              ({{ componentInstance.id }})
+              {{ componentInstance.name }}
             </div>
           </div>
         </template>
@@ -68,6 +68,7 @@ export default defineComponent({
           ...acc,
           [address]: {
             id: componentId,
+            name: registeredIoComponents[componentId].name,
             controllerComponentName:
               registeredIoComponents[componentId].controllerComponentName,
             controllerInstance: new registeredIoComponents[
@@ -88,8 +89,8 @@ export default defineComponent({
       );
     },
     isThereIoComponents(): boolean {
-      return Boolean(Object.keys(this.componentsInstances).length)
-    }
+      return Boolean(Object.keys(this.componentsInstances).length);
+    },
   },
   watch: {
     componentsControllers(

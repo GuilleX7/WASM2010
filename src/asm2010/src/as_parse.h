@@ -11,11 +11,9 @@
 #include "trace_log.h"
 #include "utils.h"
 
-#define AS_MAX_SOURCE_LINES 65535
-#define AS_MAX_LINE_LENGTH 256
 #define AS_MAX_TRACE_LENGTH 256
 #define AS_MAX_LOG_LENGTH (AS_MAX_TRACE_LENGTH * 5)
-#define AS_MAX_EQU_LENGTH 64
+#define AS_MAX_EQU_LENGTH 128
 
 /* The longest line, so 16 bytes is enough
         1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
@@ -60,7 +58,7 @@ typedef struct as_parse_assembled_code as_parse_assembled_code;
         a CS2010 program after parsing the assembly code
 */
 struct as_parse_info {
-  /** @brief Hash table containig all equ replacements */
+  /** @brief Hash table containing all equ replacements */
   hash_table equs_ht;
   /** @brief Trace log for the assembly proccess */
   trace_log log;
@@ -75,21 +73,27 @@ struct as_parse_info {
   /** @brief Array containing assembled machine code */
   as_parse_assembled_code *assembled_code;
   /** @brief Index of current machine code */
-  size_t assembled_code_index;
+  size_t assembled_code_length;
 };
 typedef struct as_parse_info as_parse_info;
 
 /**
- * @brief Initializes a parse struct
- * @param pinfo Pointer to as_parse_info struct to be initialized
- * @return 0 if success, non-zero value otherwise
+ * @brief Creates a new parsing struct
+ * @return Pointer to a new parsing struct
  */
-__attribute__((visibility("default"))) int as_parse_init(as_parse_info *pinfo,
-                                                         size_t max_sentences);
+__attribute__((visibility("default"))) as_parse_info *as_parse_create();
 
 /**
- * @brief Parses CS2010 assembly code.
- * @param pinfo Pointer to the parse struct that keeps track of
+ * @brief Initializes a given parsing struct
+ * @param parsing_info Pointer to as_parse_info struct to be initialized
+ * @return 0 if success, non-zero value otherwise
+ */
+__attribute__((visibility("default"))) int
+as_parse_init(as_parse_info *parsing_info, size_t max_sentences);
+
+/**
+ * @brief Parses CS2010 assembly code
+ * @param parsing_info Pointer to the parse struct that keeps track of
  *				parsing proccess
  * @param line Pointer to the string containing the assembly source
  * @param stop_on_error Whether it should stop parsing if any
@@ -99,26 +103,27 @@ __attribute__((visibility("default"))) int as_parse_init(as_parse_info *pinfo,
  *			AS_PARSE_ERROR if parsing was aborted
  */
 __attribute__((visibility("default"))) int
-as_parse_source(as_parse_info *pinfo, char const *source, bool stop_on_error);
+as_parse_source(as_parse_info *parsing_info, char const *source,
+                bool stop_on_error);
 
 /**
- * @brief Parses one line of CS2010 assembly code.
+ * @brief Parses one line of CS2010 assembly code
  *		This function must be called for every line of the assembly
- *		in order before calling parse_assemble.
- * @param pinfo Pointer to the parse struct that keeps track of
+ *		in order before calling parse_assemble
+ * @param parsing_info Pointer to the parse struct that keeps track of
  *				parsing proccess
  * @param line Pointer to the string containing the assembly source
  * @return AS_PARSE_OK if line was parsed successfully,
  *			AS_PARSE_WARNING if a warning raised or
  *			AS_PARSE_ERROR if parsing should be aborted
  */
-__attribute__((visibility("default"))) int as_parse_line(as_parse_info *pinfo,
-                                                         char const *line);
+__attribute__((visibility("default"))) int
+as_parse_line(as_parse_info *parsing_info, char const *line);
 
 /**
  * @brief Assembles the parsing struct (it contains the previously
-                parsed assembly lines) into binary machine code.
- * @param pinfo Pointer to as_parse_info struct that keeps tract of
+                parsed assembly lines) into binary machine code
+ * @param parsing_info Pointer to as_parse_info struct that keeps tract of
  *		parsing proccess
 * @param stop_on_error Whether it should stop assembling if any
  *          error comes up
@@ -126,13 +131,16 @@ __attribute__((visibility("default"))) int as_parse_line(as_parse_info *pinfo,
  *			AS_PARSE_ERROR otherwise
 */
 __attribute__((visibility("default"))) int
-as_parse_assemble(as_parse_info *pinfo, bool stop_on_error);
+as_parse_assemble(as_parse_info *parsing_info, bool stop_on_error);
 
 /**
- * @brief Frees as_parse_info struct and associated memory
- * @param pinfo Pointer to as_parse_info structure
- */
-__attribute__((visibility("default"))) void as_parse_free(as_parse_info *pinfo);
+ * @brief Reads the log of a given parsing struct
+ * @param parsing_info Pointer to as_parse_info struct that keeps tract of
+ *		parsing proccess
+ * @return Pointer to the log string
+*/
+__attribute__((visibility("default"))) char const *
+as_parse_get_log(as_parse_info *parsing_info);
 
 /**
  * @brief Disassembles a given raw, binary sentence of CS2010 machine
@@ -142,7 +150,14 @@ __attribute__((visibility("default"))) void as_parse_free(as_parse_info *pinfo);
  * @return Pointer to string containing the dissasembly if success,
  *		a null pointer otherwise (invalid binary code)
  */
-__attribute__((visibility("default"))) char *
+__attribute__((visibility("default"))) char const *
 as_disassemble_sentence(unsigned short raw_sentence);
+
+/**
+ * @brief Frees as_parse_info struct and associated memory
+ * @param parsing_info Pointer to as_parse_info structure
+ */
+__attribute__((visibility("default"))) void
+as_parse_free(as_parse_info *parsing_info);
 
 #endif /* AS_PARSE_H */

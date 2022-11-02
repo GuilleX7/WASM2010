@@ -16,6 +16,8 @@
 #define STRGIFY(a) #a
 #define STRINGIFY(a) STRGIFY(a)
 
+#define BIT_AT(a, n) (!!(a & (1u << n)))
+
 #ifdef _WIN32
 #ifdef _WIN64
 #define PRI_SIZET PRIu64
@@ -39,14 +41,13 @@
 #define HEX64_X_FORMAT "0x%016X"
 
 /**
- * @brief Reads a line of a given string in uppercase
+ * @brief Reads a line of a given string, transforming it to uppercase
  * @param line Pointer to the buffer used to store the line
  * @param max_length Maximum length of the line to be buffered
  * @param str Pointer to the string to be readed from
- * @param offset Should be a pointer to 0-integer first time this
- *              function is called. Successive calls needs the
- *              same integer object to be passed in order to keep
- *              track of the position
+ * @param offset Should be a pointer to a 0 integer the first time
+        this function is called. Successive calls should have the
+        same pointer passed
  * @return false if there are no more lines left,
  *         true otherwise
  */

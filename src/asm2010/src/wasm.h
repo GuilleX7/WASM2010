@@ -11,4 +11,4 @@ extern bool wasm_custom_io_write(size_t address, unsigned char content);
 __attribute__((visibility("default"))) void
 wasm_set_custom_io_functions(cs2010 *cs);
 
-#endif
+#endif /* WASM_H */

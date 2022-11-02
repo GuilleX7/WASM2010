@@ -7,64 +7,64 @@
 
 #include "parse.h"
 
-#define HEX_BASE 16
-#define DEC_BASE 10
-#define BIN_BASE 2
+#define HEXADECIMAL_RADIX 16
+#define DECIMAL_RADIX 10
+#define BINARY_RADIX 2
 
-int skip_spaces(char const **lineptr) {
-  while (isspace((unsigned char)**lineptr) && **lineptr != '\n') {
-    (*lineptr)++;
+int skip_spaces(char const **line_tracker) {
+  while (isspace((unsigned char)**line_tracker) && **line_tracker != '\n') {
+    (*line_tracker)++;
   }
-  if (!**lineptr || **lineptr == '\n') {
+  if (!**line_tracker || **line_tracker == '\n') {
     return PARSE_LINE_END;
   }
   return PARSE_LINE_KEEP;
 }
 
-int search_character(char const **lineptr, char ch,
+int search_character(char const **line_tracker, char ch,
                      int skip_spaces(char const **)) {
-  if (skip_spaces(lineptr) == PARSE_LINE_END) {
+  if (skip_spaces(line_tracker) == PARSE_LINE_END) {
     return PARSE_LINE_END;
   }
 
-  if (**lineptr == ch) {
-    (*lineptr)++;
+  if (**line_tracker == ch) {
+    (*line_tracker)++;
   } else {
     return PARSE_LINE_END;
   }
 
-  return skip_spaces(lineptr);
+  return skip_spaces(line_tracker);
 }
 
-char *retrieve_alnum_identifier(char const **lineptr, size_t max_len,
+char *retrieve_alnum_identifier(char const **line_tracker, size_t max_length,
                                 int skip_spaces(char const **)) {
   char *identifier;
   size_t i = 0;
 
-  if (skip_spaces(lineptr) == PARSE_LINE_END) {
+  if (skip_spaces(line_tracker) == PARSE_LINE_END) {
     return 0;
   }
 
-  if (!isalpha((unsigned char)**lineptr)) {
+  if (!isalpha((unsigned char)**line_tracker)) {
     return 0;
   }
 
-  identifier = malloc((max_len + 1) * sizeof(char));
+  identifier = malloc((max_length + 1) * sizeof(char));
   if (!identifier) {
     return 0;
   }
 
-  while ((isalnum((unsigned char)**lineptr) || **lineptr == '_') &&
-         i < max_len) {
-    *(identifier + i) = **lineptr;
-    (*lineptr)++;
+  while ((isalnum((unsigned char)**line_tracker) || **line_tracker == '_') &&
+         i < max_length) {
+    *(identifier + i) = **line_tracker;
+    (*line_tracker)++;
     i++;
   }
   *(identifier + i) = 0;
 
-  if (i == 0 || (i == max_len &&
-                 (isalnum((unsigned char)**lineptr) || **lineptr == '_'))) {
-    /* Either we didn't capture characters at all nor we didn't capture
+  if (i == 0 || (i == max_length && (isalnum((unsigned char)**line_tracker) ||
+                                     **line_tracker == '_'))) {
+    /* Either we didn't capture characters at all or we didn't capture
     the entire identifier, throw an error */
     free(identifier);
     identifier = 0;
@@ -73,66 +73,66 @@ char *retrieve_alnum_identifier(char const **lineptr, size_t max_len,
   return identifier;
 }
 
-size_t retrieve_value(char const **lineptr, int *status, size_t max_value,
+size_t retrieve_value(char const **line_tracker, int *status, size_t max_value,
                       int skip_spaces(char const **)) {
   size_t value = 0;
 
-  if (skip_spaces(lineptr) == PARSE_LINE_END) {
+  if (skip_spaces(line_tracker) == PARSE_LINE_END) {
     *status = RETRIEVE_VALUE_INVALID;
     return value;
   }
 
-  if (**lineptr == '0' && *(*lineptr + 1) == 'X') {
+  if (**line_tracker == '0' && *(*line_tracker + 1) == 'X') {
     /* Hexadecimal using 0x prefix */
-    (*lineptr) += 2;
-    value = retrieve_value_hexadecimal(lineptr, status, max_value);
-  } else if (**lineptr == '$') {
+    (*line_tracker) += 2;
+    value = retrieve_value_hexadecimal(line_tracker, status, max_value);
+  } else if (**line_tracker == '$') {
     /* Hexadecimal using $ prefix */
-    (*lineptr)++;
-    value = retrieve_value_hexadecimal(lineptr, status, max_value);
-  } else if (**lineptr == '0' && *(*lineptr + 1) == 'B') {
+    (*line_tracker)++;
+    value = retrieve_value_hexadecimal(line_tracker, status, max_value);
+  } else if (**line_tracker == '0' && *(*line_tracker + 1) == 'B') {
     /* Binary */
-    (*lineptr) += 2;
-    value = retrieve_value_binary(lineptr, status, max_value);
+    (*line_tracker) += 2;
+    value = retrieve_value_binary(line_tracker, status, max_value);
   } else {
     /* Decimal */
-    value = retrieve_value_decimal(lineptr, status, max_value);
+    value = retrieve_value_decimal(line_tracker, status, max_value);
   }
 
   return value;
 }
 
-size_t retrieve_value_hexadecimal(char const **lineptr, int *status,
+size_t retrieve_value_hexadecimal(char const **line_tracker, int *status,
                                   size_t max_value) {
   size_t value = 0;
-  unsigned char ch_value = 0;
+  unsigned char digit_numerical_value = 0;
   size_t valid_characters = 0;
 
-  while (isxdigit((unsigned char)**lineptr)) {
-    if (isdigit((unsigned char)**lineptr)) {
-      ch_value = **lineptr - '0';
-    } else if (isupper(**lineptr)) {
-      ch_value = **lineptr - 'A' + 10;
+  while (isxdigit((unsigned char)**line_tracker)) {
+    if (isdigit((unsigned char)**line_tracker)) {
+      digit_numerical_value = **line_tracker - '0';
+    } else if (isupper(**line_tracker)) {
+      digit_numerical_value = **line_tracker - 'A' + 10;
     } else {
-      ch_value = **lineptr - 'a' + 10;
+      digit_numerical_value = **line_tracker - 'a' + 10;
     }
 
-    if (check_unsigned_multiply_wrap(value, HEX_BASE)) {
+    if (check_unsigned_multiply_wrap(value, HEXADECIMAL_RADIX)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value *= HEX_BASE;
-    if (check_unsigned_add_wrap(value, ch_value)) {
+    value *= HEXADECIMAL_RADIX;
+    if (check_unsigned_add_wrap(value, digit_numerical_value)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value += ch_value;
+    value += digit_numerical_value;
     if (value > max_value) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
 
-    (*lineptr)++;
+    (*line_tracker)++;
     valid_characters++;
   }
 
@@ -140,31 +140,31 @@ size_t retrieve_value_hexadecimal(char const **lineptr, int *status,
   return value;
 }
 
-size_t retrieve_value_binary(char const **lineptr, int *status,
+size_t retrieve_value_binary(char const **line_tracker, int *status,
                              size_t max_value) {
   size_t value = 0;
-  unsigned char ch_value = 0;
+  unsigned char digit_numerical_value = 0;
   size_t valid_characters = 0;
 
-  while (**lineptr == '0' || **lineptr == '1') {
-    ch_value = **lineptr - '0';
+  while (**line_tracker == '0' || **line_tracker == '1') {
+    digit_numerical_value = **line_tracker - '0';
 
-    if (check_unsigned_multiply_wrap(value, BIN_BASE)) {
+    if (check_unsigned_multiply_wrap(value, BINARY_RADIX)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value *= BIN_BASE;
-    if (check_unsigned_add_wrap(value, ch_value)) {
+    value *= BINARY_RADIX;
+    if (check_unsigned_add_wrap(value, digit_numerical_value)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value += ch_value;
+    value += digit_numerical_value;
     if (value > max_value) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
 
-    (*lineptr)++;
+    (*line_tracker)++;
     valid_characters++;
   }
 
@@ -172,39 +172,39 @@ size_t retrieve_value_binary(char const **lineptr, int *status,
   return value;
 }
 
-size_t retrieve_value_decimal(char const **lineptr, int *status,
+size_t retrieve_value_decimal(char const **line_tracker, int *status,
                               size_t max_value) {
   size_t value = 0;
-  unsigned char ch_value = 0;
+  unsigned char digit_numerical_value = 0;
   size_t valid_characters = 0;
   bool negative = false;
-  if (**lineptr == '-') {
+  if (**line_tracker == '-') {
     negative = true;
     max_value = max_value / 2 + 1;
-    (*lineptr)++;
-  } else if (**lineptr == '+') {
-    (*lineptr)++;
+    (*line_tracker)++;
+  } else if (**line_tracker == '+') {
+    (*line_tracker)++;
   }
 
-  while (isdigit((unsigned char)**lineptr)) {
-    ch_value = **lineptr - '0';
+  while (isdigit((unsigned char)**line_tracker)) {
+    digit_numerical_value = **line_tracker - '0';
 
-    if (check_unsigned_multiply_wrap(value, DEC_BASE)) {
+    if (check_unsigned_multiply_wrap(value, DECIMAL_RADIX)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value *= DEC_BASE;
-    if (check_unsigned_add_wrap(value, ch_value)) {
+    value *= DECIMAL_RADIX;
+    if (check_unsigned_add_wrap(value, digit_numerical_value)) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
-    value += ch_value;
+    value += digit_numerical_value;
     if (value > max_value) {
       *status = RETRIEVE_VALUE_OUTOFBOUNDS;
       return value;
     }
 
-    (*lineptr)++;
+    (*line_tracker)++;
     valid_characters++;
   }
 

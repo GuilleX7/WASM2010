@@ -35,7 +35,15 @@
           :disabled="isClockRunning"
           @click="hardReset"
         >
-          Reset
+          Hard reset
+        </b-button>
+        <b-button
+          type="is-light"
+          icon-left="restart"
+          :disabled="isClockRunning"
+          @click="softReset"
+        >
+          Soft reset
         </b-button>
         <b-button
           type="is-light"
@@ -50,9 +58,11 @@
         <div class="asm--emulator-rom has-background-white">
           <RomViewer
             :memory="rom"
-            :highlight-line-idx="currentFetchedInstructionIdx"
+            :current-instruction-idx="
+              !isVisualMotionReduced ? currentFetchedInstructionIdx : undefined
+            "
             :displayable-radix="settings.romDisplayableRadix"
-            :is-stopped="stopped"
+            :is-stopped="isStopped"
           />
         </div>
         <div class="asm--emulator-registers has-background-white">
@@ -64,17 +74,25 @@
         <div class="asm--emulator-ram has-background-white">
           <RamViewer
             :memory="ram"
-            :highlight-word-idx="registers.mar"
+            :current-accessed-word-idx="
+              !isVisualMotionReduced ? registers.mar : undefined
+            "
+            :stack-pointer-word-idx="
+              !isVisualMotionReduced ? registers.sp : undefined
+            "
+            :io-mapped-addresses="ioMappedAddresses"
             :displayable-radix="settings.ramDisplayableRadix"
             :words-per-row="settings.ramWordsPerRow"
           />
         </div>
         <div class="asm--emulator-signals has-background-white">
           <SignalsViewer
+            v-if="!isVisualMotionReduced"
             :signals="signals"
             :microop="microop"
             :signals-per-row="4"
           />
+          <ViewerCurtains v-else />
         </div>
         <div class="asm--emulator-io has-background-white">
           <IoPlayground
@@ -119,10 +137,11 @@ import {
   csFullStep,
   csGetStatus,
   csHardReset,
-  csLoadAndStart,
+  csLoadProgram,
   csMicroStep,
   CsRegisterName,
   CsSignalName,
+  csSoftReset,
   CS_RAM_SIZE,
   CS_ROM_SIZE,
   TAsAssembledCode,
@@ -136,6 +155,7 @@ import RamViewer from '@/components/emulator/RamViewer.vue';
 import RegistersViewer from '@/components/emulator/RegistersViewer.vue';
 import SignalsViewer from '@/components/emulator/SignalsViewer.vue';
 import IoPlayground from '@/components/emulator/IoPlayground.vue';
+import ViewerCurtains from '@/components/emulator/ViewerCurtains.vue';
 import SettingsModal from '@/components/emulator/settings/SettingsModal.vue';
 import { positiveMod } from '@/utils/math';
 import { TEmulatorSettings } from '@/components/emulator/settings';
@@ -149,6 +169,7 @@ export default defineComponent({
     SignalsViewer,
     IoPlayground,
     SettingsModal,
+    ViewerCurtains,
   },
   props: {
     assembledCode: {
@@ -179,7 +200,7 @@ export default defineComponent({
       {}
     ) as TCsSignals,
     microop: 0,
-    stopped: false,
+    isStopped: false,
     isClockRunning: false,
     clockTimerId: 0,
     lastClockTick: 0,
@@ -194,6 +215,7 @@ export default defineComponent({
       registerDisplayableRadix: 16,
       ramDisplayableRadix: 16,
       ramWordsPerRow: 16,
+      reduceVisualMotion: true,
       mappedIoComponents: {
         0: IoComponentId.HexDisplay,
         1: IoComponentId.Buttons,
@@ -207,17 +229,38 @@ export default defineComponent({
     currentFetchedInstructionIdx(): number {
       return positiveMod(this.registers[CsRegisterName.PC] - 1, 255);
     },
-    uiRefreshMininumTime(): number {
+    nextInstructionToFetchIdx(): number {
+      return this.registers[CsRegisterName.PC];
+    },
+    ioMappedAddresses(): Set<number> {
+      return new Set(
+        Object.keys(this.settings.mappedIoComponents).map((address) =>
+          parseInt(address)
+        )
+      );
+    },
+    uiRefreshMinimumTime(): number {
       return 1000 / this.settings.uiRefreshFrequency;
+    },
+    isVisualMotionReduced(): boolean {
+      return this.isClockRunning && this.settings.reduceVisualMotion;
     },
   },
   watch: {
-    isRunningEmulation(value) {
-      if (value) {
+    isRunningEmulation(): void {
+      if (this.isRunningEmulation) {
         this.setup();
       } else {
         this.stopClock();
       }
+    },
+    isVisualMotionReduced() {
+      this.$emit(
+        'current-assembly-line-changed',
+        this.isVisualMotionReduced
+          ? undefined
+          : this.assembledCode?.[this.currentFetchedInstructionIdx]
+      );
     },
   },
   methods: {
@@ -229,24 +272,26 @@ export default defineComponent({
           : 0;
       }
       this.rom = machineCode;
-      csLoadAndStart(machineCode);
+      csLoadProgram(machineCode);
       this.resetIoComponents();
       this.updateUiToMatchCsStatus(csGetStatus());
     },
     updateUiToMatchCsStatus(
-      { ram, reg, signals, microop, stopped }: TCsStatus,
+      { ram, registers, signals, microop, isStopped }: TCsStatus,
       uiClockTick: number = performance.now()
     ): void {
       this.ram = ram;
-      this.registers = reg;
+      this.registers = registers;
       this.signals = signals;
       this.microop = microop;
-      this.stopped = stopped;
-      this.$emit(
-        'current-assembly-line-changed',
-        this.assembledCode?.[this.currentFetchedInstructionIdx]
-      );
-      if (stopped) {
+      this.isStopped = isStopped;
+      if (!this.isVisualMotionReduced) {
+        this.$emit(
+          'current-assembly-line-changed',
+          this.assembledCode?.[this.currentFetchedInstructionIdx]
+        );
+      }
+      if (isStopped) {
         this.$buefy.snackbar.open({
           duration: 4000,
           message: `Execution has finished`,
@@ -276,6 +321,11 @@ export default defineComponent({
           type: 'is-warning',
         });
       }
+      this.updateUiToMatchCsStatus(csGetStatus());
+    },
+    softReset(): void {
+      csSoftReset();
+      this.resetIoComponents();
       this.updateUiToMatchCsStatus(csGetStatus());
     },
     hardReset(): void {
@@ -324,10 +374,10 @@ export default defineComponent({
         this.clockTick(timeElapsed, stepFn)
       );
 
-      if (timeElapsedSinceLastUiTick >= this.uiRefreshMininumTime) {
+      if (timeElapsedSinceLastUiTick >= this.uiRefreshMinimumTime) {
         const csStatus = csGetStatus();
         this.updateUiToMatchCsStatus(csStatus, currentTickTime);
-        if (csStatus.stopped) {
+        if (csStatus.isStopped) {
           this.stopClock();
         }
       }

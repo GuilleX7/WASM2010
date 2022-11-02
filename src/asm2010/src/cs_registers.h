@@ -39,15 +39,20 @@
 #define CS_ALUOP_SEC (CS_SIGNAL_ALUOP0 | CS_SIGNAL_ALUOP1)
 #define CS_ALUOP_SHR CS_SIGNAL_ALUOP2
 #define CS_ALUOP_SHL (CS_SIGNAL_ALUOP0 | CS_SIGNAL_ALUOP2)
-#define CS_ALUOP_TRA (CS_SIGNAL_ALUOP1 | CS_SIGNAL_ALUOP2)
+#define CS_ALUOP_TRANSFER_A (CS_SIGNAL_ALUOP1 | CS_SIGNAL_ALUOP2)
 #define CS_ALUOP_ADD CS_SIGNAL_ALUOP3
 #define CS_ALUOP_SUB (CS_SIGNAL_ALUOP3 | CS_SIGNAL_ALUOP1)
-#define CS_ALUOP_TRB (CS_SIGNAL_ALUOP3 | CS_SIGNAL_ALUOP2)
+#define CS_ALUOP_TRANSFER_B (CS_SIGNAL_ALUOP3 | CS_SIGNAL_ALUOP2)
 
-#define CS_SR_C (1u << 0)
-#define CS_SR_Z (1u << 1)
-#define CS_SR_N (1u << 2)
-#define CS_SR_V (1u << 3)
+#define CS_SR_C_OFFSET 0
+#define CS_SR_Z_OFFSET 1
+#define CS_SR_N_OFFSET 2
+#define CS_SR_V_OFFSET 3
+
+#define CS_SR_C (1u << CS_SR_C_OFFSET)
+#define CS_SR_Z (1u << CS_SR_Z_OFFSET)
+#define CS_SR_N (1u << CS_SR_N_OFFSET)
+#define CS_SR_V (1u << CS_SR_V_OFFSET)
 
 struct cs_registers {
   unsigned long signals;

@@ -9,4 +9,4 @@ loop:   ST (R1), R0
         SUBI R0, 1
         BRZS end
         JMP loop
-end:    RET
+end:    STOP
