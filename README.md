@@ -1,27 +1,18 @@
 # WASM2010
-WebAssembly port of ASM2010:
 
-- CS2010 architecture: https://www.dte.us.es/docencia/etsii/gii-is/estructura-de-computadores/grupo-4-2018/CS2010-2013.pdf
-- ASM2010 repository: https://github.com/GuilleX7/ASM2010
+WASM2010 is a set of tools that provides the user with an experimental environment for CS2010, a hardware architecture designed by the Higher Technical School of Computer Engineering of the University of Seville for academic purposes. Composed at its core of an assembler and an emulator, it allows the user to assemble programs, load them into a virtual CS2010 machine, and understand their operation through step-by-step debugging or real-time execution, as well as to interact with the computer using input and
+output devices.
 
-## Development and building
+While the user interaction originates in a web application, its core is isolated in a WebAssembly module —a low-level portable bytecode—
+written in C, thus allowing its reuse in web and desktop projects that wish to incorporate or extend its functionality.
 
-First, install the required dependencies:
+- Original CS2010 architecture (in Spanish): https://www.dte.us.es/docencia/etsii/gii-is/estructura-de-computadores/grupo-4-2018/CS2010-2013.pdf
+- Original ASM2010 repository (outdated): https://github.com/GuilleX7/ASM2010
 
-```
-npm ci
-```
+## Documentation
 
-Then, you can start a development server:
+This has been my Computer Engineering degree final project. The official documentation for this project is located at the ['docs' folder](https://github.com/GuilleX7/WASM2010/tree/master/docs).
 
-```
-npm run dev
-```
+### Where is Jasm source code?
 
-Or you can build the toolkit for production:
-
-```
-npm run build
-```
-
-Please take into account that the project requires an ASM2010 binary to be placed in 'src/asm2010/build'. A prebuilt binary is already featured in this project, but you can find instructions on how to build it in the 'src/asm2010' folder.
+You can find the Jasm repository [here](https://github.com/GuilleX7/Jasm).
