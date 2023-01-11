@@ -126,7 +126,7 @@ int cs_load_program(cs2010 *cs, unsigned short *sentences,
 
 void cs_microfetch(cs2010 *cs) {
   cs->registers.signals =
-      cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].signals[cs->microop++];
+      cs_ins_list[CS_GET_OPCODE(cs->registers.ir)].signals[++cs->microop];
 }
 
 void cs_fetch(cs2010 *cs) {
