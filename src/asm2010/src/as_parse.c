@@ -943,8 +943,13 @@ char const *as_disassemble_sentence(unsigned short raw_sentence) {
     }
     break;
   case CS_INS_FORMAT_B:
-    snprintf(disassembly, AS_MAX_DISASSEMBLY_LENGTH, "%s R%u, " HEX8_X_FORMAT,
-             instruction->name, arg_a, arg_b);
+    if (instruction->index == CS_INS_I_STS) {
+      snprintf(disassembly, AS_MAX_DISASSEMBLY_LENGTH,
+               "%s " HEX8_X_FORMAT ", R%u", instruction->name, arg_b, arg_a);
+    } else {
+      snprintf(disassembly, AS_MAX_DISASSEMBLY_LENGTH, "%s R%u, " HEX8_X_FORMAT,
+               instruction->name, arg_a, arg_b);
+    }
     break;
   case CS_INS_FORMAT_C:
     snprintf(disassembly, AS_MAX_DISASSEMBLY_LENGTH, "%s " HEX8_X_FORMAT,
