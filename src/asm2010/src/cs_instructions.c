@@ -212,13 +212,17 @@ cs_instruction const *cs_ins_get_from_sentence(unsigned short sentence) {
     jmp_condition = CS_GET_JMP_CONDITION(sentence);
     switch (jmp_condition) {
     case CS_JMP_COND_EQUAL:
-      cs_instruction = &cs_ins_list[CS_INS_I_BRZS];
+      cs_instruction = &cs_ins_list[CS_INS_I_BREQ];
+      break;
     case CS_JMP_COND_LOWER:
       cs_instruction = &cs_ins_list[CS_INS_I_BRCS];
+      break;
     case CS_JMP_COND_OVERFLOW:
       cs_instruction = &cs_ins_list[CS_INS_I_BRVS];
+      break;
     case CS_JMP_COND_SLOWER:
       cs_instruction = &cs_ins_list[CS_INS_I_BRLT];
+      break;
     }
   }
   /* Check for a valid instruction */
