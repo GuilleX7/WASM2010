@@ -1,6 +1,6 @@
 declare module '*.vue' {
-  import type { DefineComponent } from 'vue';
-  const component: DefineComponent<unknown, unknown, unknown>;
+  import { VueConstructor } from 'vue';
+  const component: VueConstructor
   export default component;
 }
 
@@ -9,18 +9,15 @@ declare module '*.wasm' {
   export default url;
 }
 
-declare namespace JSX {
-  interface IntrinsicElements {
-    [tagName: string]: unknown;
-  }
-}
-
 declare module 'vue-multipane' {
+  import { VueConstructor } from 'vue/types/umd';
   const Multipane: VueConstructor;
   const MultipaneResizer: VueConstructor;
   export { Multipane, MultipaneResizer };
 }
 
 declare module 'buefy' {
-  export default {} as PluginObject
+  import { PluginObject } from 'vue/types/plugin';
+  const plugin: PluginObject<unknown>;
+  export default plugin;
 }
