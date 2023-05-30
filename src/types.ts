@@ -1,1 +1,1 @@
-export type TCtor<C> = new (...args: unknown[]) => C;
+export type Constructor<Clazz> = new (...args: unknown[]) => Clazz;

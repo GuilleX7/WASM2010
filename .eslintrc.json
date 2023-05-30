@@ -2,18 +2,31 @@
   "root": true,
   "parser": "vue-eslint-parser",
   "parserOptions": {
-    "parser": "@typescript-eslint/parser"
+    "parser": "@typescript-eslint/parser",
+    "sourceType": "module"
   },
+  "plugins": ["@typescript-eslint"],
   "env": {
-    "node": true,
-    "browser": true
+    "browser": true,
+    "es6": true
   },
   "extends": [
     "eslint:recommended",
-    "plugin:vue/essential",
-    "plugin:vue/strongly-recommended",
+    "plugin:@typescript-eslint/recommended",
     "plugin:vue/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "prettier"
   ],
-  "ignorePatterns" : ["**/*.scss", "**/webpack.config.js"]
+  "overrides": [
+    {
+      "files": ["webpack.config.js"],
+      "extends": ["eslint:recommended"],
+      "parser": "eslint-parser",
+      "plugins": [],
+      "env": {
+        "browser": false,
+        "es6": false,
+        "node": true
+      }
+    }
+  ]
 }
