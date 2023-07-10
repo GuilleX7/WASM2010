@@ -1,9 +1,5 @@
 <template>
-  <b-input
-    type="text"
-    :value="buffer"
-    @keydown.native.prevent="onKeyDown"
-  />
+  <b-input type="text" :value="buffer" @keydown.native.prevent="onKeyDown" />
 </template>
 
 <script lang="ts">

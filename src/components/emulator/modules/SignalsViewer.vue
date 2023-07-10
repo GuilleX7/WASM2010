@@ -64,13 +64,15 @@ export default defineComponent({
     signalsByGroups(): TSignal[][] {
       return [
         [CsSignal.WIR, CsSignal.CPC, CsSignal.RPC, CsSignal.IPC, CsSignal.WPC],
-        [
-          CsSignal.WMDR,
-          CsSignal.IOMDR,
-          CsSignal.WMAR,
-          CsSignal.WMEM,
-          CsSignal.RMEM,
-        ],
+        this.csPlatform === CsPlatform.Cs2010
+          ? [
+              CsSignal.WMDR,
+              CsSignal.IOMDR,
+              CsSignal.WMAR,
+              CsSignal.WMEM,
+              CsSignal.RMEM,
+            ]
+          : [CsSignal.WMAR, CsSignal.WMEM, CsSignal.RMEM],
         [CsSignal.WAC, CsSignal.RAC, CsSignal.INM, CsSignal.SRW, CsSignal.WREG],
         [CsSignal.CSP, CsSignal.RSP, CsSignal.ISP, CsSignal.DSP],
         this.csPlatform === CsPlatform.Cs2010

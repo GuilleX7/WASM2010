@@ -41,8 +41,13 @@ export function formatNumber(
   sizeInBits: number,
   prefix = ''
 ) {
-  const integerNumber = typeof number === 'string' ? Number.parseInt(number) : number
+  const integerNumber =
+    typeof number === 'string' ? Number.parseInt(number) : number;
   const totalCharacters = maxAmountOfDigitsToRepresentNumber(radix, sizeInBits);
-  const paddedString = padString(integerNumber.toString(radix), '0', totalCharacters);
+  const paddedString = padString(
+    integerNumber.toString(radix),
+    '0',
+    totalCharacters
+  );
   return `${prefix}${paddedString}`;
 }

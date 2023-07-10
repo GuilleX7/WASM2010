@@ -1,0 +1,3 @@
+[submodule "src/core/wasm/subprojects/ASM2010"]
+	path = src/core/wasm/subprojects/ASM2010
+	url = git@github.com:GuilleX7/ASM2010.git
