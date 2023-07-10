@@ -1,5 +1,5 @@
 import { IoRandomGeneratorHandler } from '@/core/ts/io';
-import { IUiIoController }  from '..';
+import { IUiIoController } from '..';
 
 export class UiRandomGeneratorController
   extends IoRandomGeneratorHandler

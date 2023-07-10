@@ -12,11 +12,9 @@
     />
     <div class="is-flex is-flex-direction-column is-fullheight is-flex-grow-1">
       <div class="asm--assembler-menu">
-        <span
-          class="mr-4 is-text-ellipsable"
-          :style="{ width: '60px', textAlign: 'center' }"
-          >{{ displayableCsPlatform }}</span
-        >
+        <span class="asm--asembler-menu-title is-text-ellipsable">{{
+          displayableCsPlatform
+        }}</span>
         <template v-if="!isRunningEmulation">
           <b-dropdown>
             <template #trigger>
@@ -32,7 +30,6 @@
             <b-dropdown-item @click="showSaveAsFileDialog">
               Save as
             </b-dropdown-item>
-            <!-- <b-dropdown-item sepa  rator /> -->
             <b-dropdown-item @click="showExamplesSidebar = true">
               Examples
             </b-dropdown-item>
@@ -44,14 +41,6 @@
             <b-dropdown-item @click="showOutput = !showOutput">
               {{ `Toggle output (${showOutput ? 'hide' : 'show'})` }}
             </b-dropdown-item>
-            <b-dropdown-item
-              @click="showCheatsheetSidebar = !showCheatsheetSidebar"
-            >
-              {{
-                `Toggle cheatsheet (${showCheatsheetSidebar ? 'hide' : 'show'})`
-              }}
-            </b-dropdown-item>
-            <!-- <b-dropdown-item separator /> -->
             <b-dropdown-item @click="showOutputInRadix(2)">
               Show output in binary
             </b-dropdown-item>
@@ -173,42 +162,10 @@
         </div>
       </div>
     </div>
-    <!-- <CheatsheetSidebar
-      :open="isCheatsheetSidebarOpen"
-      @close="showCheatsheetSidebar = false"
-    /> -->
-    <div
-      v-if="!isRunningEmulation"
-      :class="{
-        'asm--cheatsheet-container': true,
-        open: showCheatsheetSidebar,
-        hint: !showCheatsheetSidebar,
-      }"
-    >
-      <b-icon
-        v-if="!showCheatsheetSidebar"
-        icon="help-rhombus"
-        class="is-fullwidth is-fullheight"
-        @click.native="showCheatsheetSidebar = true"
-      ></b-icon>
-      <template v-else>
-        <div
-          class="is-flex is-fullwidth px-5 py-5 is-flex-direction-row is-justify-content-space-between"
-        >
-          <p class="menu-label">Cheatsheet</p>
-          <button
-            type="button"
-            class="delete"
-            @click="showCheatsheetSidebar = false"
-          />
-        </div>
-      </template>
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-import CheatsheetSidebar from '@/components/assembler/modules/CheatsheetSidebar.vue';
 import ExamplesSidebar from '@/components/assembler/modules/ExamplesSidebar.vue';
 import { getAsm2010Instance } from '@/core/ts';
 import { CsPlatform, TCsAssemblyInstruction } from '@/core/ts/types';
@@ -228,7 +185,6 @@ import { mapActions, mapWritableState } from 'pinia';
 export default defineComponent({
   components: {
     ExamplesSidebar,
-    CheatsheetSidebar,
   },
   props: {
     isRunningEmulation: {
@@ -242,8 +198,7 @@ export default defineComponent({
   },
   data: () => ({
     sourceAssembly: '',
-    debouncedSourceAssembly: '',
-    debounceSourceAssemblyTimer: undefined as
+    debounceAssemblyTimer: undefined as
       | undefined
       | ReturnType<typeof setTimeout>,
     assembledInstructions: [] as TCsAssemblyInstruction[],
@@ -251,7 +206,6 @@ export default defineComponent({
     isAssembling: false,
     currentLogLineIndex: 0,
     showExamplesSidebar: false,
-    showCheatsheetSidebar: false,
     isLoading: false,
   }),
   computed: {
@@ -269,18 +223,15 @@ export default defineComponent({
     isExamplesSidebarOpen(): boolean {
       return this.showExamplesSidebar && !this.isRunningEmulation;
     },
-    isCheatsheetSidebarOpen(): boolean {
-      return this.showCheatsheetSidebar && !this.isRunningEmulation;
-    },
-    assembledSourceAssemblyMetadata(): string[] {
+    sourceAssemblyMetadata(): string[] {
       let currentAssembledInstructionIdx = 0;
-      return [...Array(countLines(this.debouncedSourceAssembly) + 1)].map(
+      return [...Array(countLines(this.sourceAssembly) + 1)].map(
         (_, sourceLineIdx) => {
           const currentAssembledCodeLine =
             this.assembledInstructions[currentAssembledInstructionIdx];
           if (
-            currentAssembledCodeLine?.matchingSourceLine ===
-            sourceLineIdx + 1
+            !this.isAssembling &&
+            currentAssembledCodeLine?.matchingSourceLine === sourceLineIdx + 1
           ) {
             currentAssembledInstructionIdx++;
             return formatNumber(
@@ -298,17 +249,6 @@ export default defineComponent({
           }
         }
       );
-    },
-    sourceAssemblyMetadata(): string[] {
-      return this.isAssembling
-        ? [...Array(countLines(this.sourceAssembly) + 1)].map(() =>
-            stringFilledWith(
-              '-',
-              maxAmountOfDigitsToRepresentNumber(this.outputRadix, 16) +
-                (this.outputRadix === 16 ? 2 : 0)
-            )
-          )
-        : this.assembledSourceAssemblyMetadata;
     },
     logLines(): string[] {
       return !this.isAssembling ? this.log.split('\n').filter(Boolean) : [];
@@ -343,15 +283,11 @@ export default defineComponent({
   watch: {
     sourceAssembly() {
       this.isAssembling = true;
-      clearTimeout(this.debounceSourceAssemblyTimer);
-      this.debounceSourceAssemblyTimer = setTimeout(
-        () => (this.debouncedSourceAssembly = this.sourceAssembly),
-        300
-      );
-    },
-    debouncedSourceAssembly() {
-      this.assemble();
-      this.isAssembling = false;
+      clearTimeout(this.debounceAssemblyTimer);
+      this.debounceAssemblyTimer = setTimeout(() => {
+        this.assemble();
+        this.isAssembling = false;
+      }, 300);
     },
     logLines() {
       if (
@@ -509,10 +445,20 @@ export default defineComponent({
 <style lang="scss">
 .asm--assembler-menu {
   display: flex;
-  padding-left: 0.75rem;
   align-items: center;
   height: 40px;
   flex-shrink: 0;
+
+  .asm--asembler-menu-title {
+    margin: 0 1.25rem;
+    width: 60px;
+    text-align: center;
+
+    &.full {
+      margin: 0;
+      width: 100%;
+    }
+  }
 }
 
 .asm--assembler-editor {
@@ -600,31 +546,6 @@ export default defineComponent({
     & > span {
       margin: 0px 0.75rem;
     }
-  }
-}
-
-.asm--cheatsheet-container {
-  display: flex;
-  height: 100%;
-  transition: all 0.25s;
-  z-index: 0;
-
-  &.hint {
-    flex-basis: 32px;
-    flex-shrink: 0;
-    cursor: pointer;
-    justify-content: center;
-    align-items: center;
-
-    &:hover {
-      flex-basis: 48px;
-      box-shadow: 0px 0px 13px 3px rgba(10, 10, 10, 0.1);
-    }
-  }
-
-  &.open {
-    flex-basis: 400px;
-    box-shadow: 0px 0px 13px 3px rgba(10, 10, 10, 0.1);
   }
 }
 </style>

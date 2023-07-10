@@ -10,9 +10,7 @@
       :key="displayableMemoryWord.address"
       ref="lines"
       :class="{
-        [!isStopped
-          ? 'has-background-info-light'
-          : 'has-background-primary-light']: i === currentInstructionIdx,
+        [currentInstructionBackgroundColor]: i === currentInstructionIdx,
       }"
     >
       <td>{{ displayableMemoryWord.address }}</td>
@@ -25,6 +23,7 @@
 <script lang="ts">
 import ResponsiveTable from '@/components/emulator/modules/ResponsiveTable.vue';
 import { getAsm2010Instance } from '@/core/ts';
+import { CS_ROM_SIZE } from '@/core/ts/types';
 import { chunkString, formatNumber } from '@/utils/format';
 import { PropType, defineComponent } from '@vue/composition-api';
 
@@ -40,6 +39,11 @@ export default defineComponent({
     memory: {
       required: true,
       type: Array as PropType<number[]>,
+    },
+    assembledInstructionsLength: {
+      required: false,
+      default: CS_ROM_SIZE,
+      type: Number,
     },
     currentInstructionIdx: {
       required: false,
@@ -62,17 +66,33 @@ export default defineComponent({
       const asm2010 = getAsm2010Instance();
       const prefix = this.displayableRadix === 16 ? '$' : '';
       const isBinary = this.displayableRadix === 2;
-      console.log(this.memory)
       const disassembly = asm2010.asDisassemble(this.memory);
       return this.memory.map((memoryWord, i) => ({
         address: formatNumber(i, 16, 8, '0x'),
-        disassembly: disassembly[i],
+        disassembly:
+          i < this.assembledInstructionsLength ? disassembly[i] : '-',
         content: chunkString(
           formatNumber(memoryWord, this.displayableRadix, 16, prefix),
           isBinary ? 8 : 0,
           ' '
         ),
       }));
+    },
+    isOutOfAssembly(): boolean {
+      return (
+        this.currentInstructionIdx !== undefined &&
+        this.currentInstructionIdx >= this.assembledInstructionsLength
+      );
+    },
+    currentInstructionBackgroundColor(): string {
+      switch (true) {
+        case this.isStopped:
+          return 'has-background-primary-light';
+        case this.isOutOfAssembly:
+          return 'has-background-danger-light';
+        default:
+          return 'has-background-info-light';
+      }
     },
   },
   watch: {
@@ -83,6 +103,16 @@ export default defineComponent({
         behavior: 'auto',
         block: 'center',
       });
+    },
+    isOutOfAssembly(): void {
+      if (this.isOutOfAssembly) {
+        this.$buefy.snackbar.open({
+          duration: 4000,
+          message: `Beware! Program counter is not pointing at the assembled instructions`,
+          position: 'is-top',
+          type: 'is-warning',
+        });
+      }
     },
   },
   methods: {

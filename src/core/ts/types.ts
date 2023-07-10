@@ -136,6 +136,7 @@ export enum Cs2010Signal {
   ALUOP2 = 'aluop2',
   ALUOP3 = 'aluop3',
 }
+
 export enum Cs3Signal {
   ALUS = 'alus',
   ALUR = 'alur',
@@ -252,6 +253,8 @@ export interface IAsm2010Exports {
   cs_hard_reset(cs_ptr: number, clear_rom: boolean): void;
   cs_soft_reset(cs_ptr: number): void;
   cs_free(cs_ptr: number): void;
+  /* Glue code */
+  wasm_set_custom_io_functions(cs_ptr: number): void;
   /* Others */
   malloc(size: number): number;
   free(ptr: number): void;

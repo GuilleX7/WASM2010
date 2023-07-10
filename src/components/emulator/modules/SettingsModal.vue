@@ -205,21 +205,34 @@
           </b-tab-item>
         </b-tabs>
       </section>
-      <footer class="modal-card-foot is-justify-content-end">
-        <b-button label="Close" @click="$emit('close')" />
-        <b-button
-          label="Save changes"
-          type="is-primary"
-          :disabled="!areNewSettingsValid"
-          @click="saveChanges"
-        />
+      <footer class="modal-card-foot is-justify-content-space-between">
+        <div>
+          <b-button
+            label="Set default settings"
+            type="is-ghost"
+            @click="restoreDefaults"
+          />
+        </div>
+        <div>
+          <b-button label="Close" @click="$emit('close')" />
+          <b-button
+            label="Save changes"
+            type="is-primary"
+            :disabled="!areNewSettingsValid"
+            @click="saveChanges"
+          />
+        </div>
       </footer>
     </div>
   </form>
 </template>
 
 <script lang="ts">
-import { TEmulatorStoreState, useEmulatorStore } from '@/stores/emulator';
+import {
+TEmulatorStoreState,
+getEmulatorStoreDefaultState,
+useEmulatorStore,
+} from '@/stores/emulator';
 import { formatNumber } from '@/utils/format';
 import { defineComponent } from '@vue/composition-api';
 import { mapWritableState } from 'pinia';
@@ -327,6 +340,9 @@ export default defineComponent({
     },
   },
   methods: {
+    restoreDefaults(): void {
+      this.newSettings = getEmulatorStoreDefaultState();
+    },
     saveChanges(): void {
       this.clockRunningFrequency = Number.parseInt(
         this.newSettings.clockRunningFrequency as unknown as string
@@ -345,6 +361,7 @@ export default defineComponent({
       this.romDisplayableRadix = this.newSettings.romDisplayableRadix;
       this.skipMicroinstructions = this.newSettings.skipMicroinstructions;
       this.uiRefreshFrequency = this.newSettings.uiRefreshFrequency;
+      this.$emit('close');
     },
     getIoComponentName(componentId: IoComponentId): string {
       return registeredIoComponents[componentId].name;

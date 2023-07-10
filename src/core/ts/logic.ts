@@ -99,10 +99,13 @@ export class Asm2010Instance {
     this.csMachinePointer = this.exports.cs_create();
     this.csMachine = this.csMachineType.at(this.csMachinePointer);
     this.exports.cs_init(this.csMachinePointer, this.csPlatform);
+    this.exports.wasm_set_custom_io_functions(this.csMachinePointer);
   }
 
   public asAssemble(sourceAssembly: string): TCsAssemblyCode {
-    const sourceAssemblyPointer = this.exports.malloc(sourceAssembly.length);
+    const sourceAssemblyPointer = this.exports.malloc(
+      sourceAssembly.length + 1
+    );
     this.jasm.copyString(sourceAssemblyPointer, sourceAssembly);
 
     const parsingInfoPointer = this.exports.cs_as_parse_create();
@@ -112,12 +115,11 @@ export class Asm2010Instance {
       CS_ROM_SIZE,
       this.csPlatform
     ),
-      this.csPlatform;
-    this.exports.cs_as_parse_source(
-      parsingInfoPointer,
-      sourceAssemblyPointer,
-      false
-    );
+      this.exports.cs_as_parse_source(
+        parsingInfoPointer,
+        sourceAssemblyPointer,
+        false
+      );
     this.exports.cs_as_parse_assemble(parsingInfoPointer, false);
 
     const csAsMachineCode = this.csAsMachineCodeType.at(
@@ -154,7 +156,7 @@ export class Asm2010Instance {
 
   public asDisassemble(machineInstructions: number[]): string[] {
     if (!machineInstructions.length) {
-      return []
+      return [];
     }
 
     const machineInstructionsPointer = this.exports.malloc(
@@ -168,8 +170,6 @@ export class Asm2010Instance {
         machineInstructions.length,
         this.csPlatform
       );
-      
-    console.log(this.jasm.char.getArray(disassembledInstructionsPointer, 128))
 
     const disassembledInstructions = this.jasm.readString(
       disassembledInstructionsPointer

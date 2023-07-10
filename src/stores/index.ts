@@ -24,7 +24,7 @@ export function saveStoreState(
   state: Record<string, unknown>
 ): void {
   const storeLocalStorageKey = getStoreLocalStorageKey(storeId);
-  
+
   try {
     localStorage.setItem(storeLocalStorageKey, JSON.stringify(state));
   } catch {

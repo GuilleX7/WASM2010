@@ -24,7 +24,10 @@
 </template>
 
 <script lang="ts">
+import { CsPlatform } from '@/core/ts/types';
+import { useGlobalStore } from '@/stores/global';
 import { defineComponent } from '@vue/composition-api';
+import { mapState } from 'pinia';
 
 export default defineComponent({
   props: {
@@ -35,23 +38,46 @@ export default defineComponent({
     },
   },
   data: () => {
-    const exampleFilesContext = require.context(
-      '@/core/wasm/subprojects/ASM2010/examples/asm',
+    const cs2010ExampleFilesContext = require.context(
+      '@/core/wasm/examples/asm/cs2010',
       true,
       /.asm$/
     );
-    const exampleFiles: Record<string, string> = exampleFilesContext
-      .keys()
-      .reduce(
+    const cs3ExampleFilesContext = require.context(
+      '@/core/wasm/examples/asm/cs3',
+      true,
+      /.asm$/
+    );
+
+    const [cs2010ExampleFiles, cs3ExampleFiles]: Record<string, string>[] = [
+      cs2010ExampleFilesContext,
+      cs3ExampleFilesContext,
+    ].map((context) =>
+      context.keys().reduce(
         (acc, fileName) => ({
           ...acc,
-          [fileName.substring(2)]: exampleFilesContext(fileName),
+          [fileName.substring(2)]: context(fileName),
         }),
         {}
-      );
+      )
+    );
+
     return {
-      exampleFiles,
+      cs2010ExampleFiles,
+      cs3ExampleFiles,
     };
+  },
+  computed: {
+    ...mapState(useGlobalStore, ['csPlatform']),
+    exampleFiles(): Record<string, string> {
+      switch (this.csPlatform) {
+        case CsPlatform.Cs2010:
+        default:
+          return this.cs2010ExampleFiles;
+        case CsPlatform.Cs3:
+          return this.cs3ExampleFiles;
+      }
+    },
   },
 });
 </script>

@@ -28,7 +28,7 @@
         </b-button>
         <b-button
           type="is-light"
-          icon-left="reload"
+          icon-left="trash-can"
           :disabled="isClockRunning"
           @click="hardReset"
         >
@@ -36,7 +36,7 @@
         </b-button>
         <b-button
           type="is-light"
-          icon-left="restart"
+          icon-left="reload"
           :disabled="isClockRunning"
           @click="softReset"
         >
@@ -55,6 +55,7 @@
         <div class="asm--emulator-rom has-background-white">
           <RomViewer
             :memory="rom"
+            :assembled-instructions-length="assembledInstructions.length"
             :current-instruction-idx="
               !isVisualMotionReduced ? currentFetchedInstructionIdx : undefined
             "
@@ -342,7 +343,9 @@ export default defineComponent({
       this.clockTimerId = window.requestAnimationFrame((nextTickTime: number) =>
         this.clockTick(
           nextTickTime,
-          this.skipMicroinstructions ? asm2010.csFullStep : asm2010.csMicroStep
+          this.skipMicroinstructions
+            ? () => asm2010.csFullStep()
+            : () => asm2010.csMicroStep()
         )
       );
     },
@@ -377,6 +380,9 @@ export default defineComponent({
     stopClock(): void {
       cancelAnimationFrame(this.clockTimerId);
       this.isClockRunning = false;
+      const asm2010 = getAsm2010Instance();
+      const csStatus = asm2010.csGetStatus();
+      this.updateUiToMatchCsStatus(csStatus);
     },
   },
 });
