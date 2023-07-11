@@ -12,9 +12,10 @@
     />
     <div class="is-flex is-flex-direction-column is-fullheight is-flex-grow-1">
       <div class="asm--assembler-menu">
-        <span class="asm--asembler-menu-title is-text-ellipsable">{{
-          displayableCsPlatform
-        }}</span>
+        <span
+          class="asm--asembler-menu-title is-text-ellipsable"
+          >{{ displayableCsPlatform }}</span
+        >
         <template v-if="!isRunningEmulation">
           <b-dropdown>
             <template #trigger>
@@ -41,6 +42,14 @@
             <b-dropdown-item @click="showOutput = !showOutput">
               {{ `Toggle output (${showOutput ? 'hide' : 'show'})` }}
             </b-dropdown-item>
+            <b-dropdown-item
+              @click="showCheatsheetSidebar = !showCheatsheetSidebar"
+            >
+              {{
+                `Toggle cheatsheet (${showCheatsheetSidebar ? 'hide' : 'show'})`
+              }}
+            </b-dropdown-item>
+            <!-- <b-dropdown-item separator /> -->
             <b-dropdown-item @click="showOutputInRadix(2)">
               Show output in binary
             </b-dropdown-item>
@@ -162,10 +171,17 @@
         </div>
       </div>
     </div>
+    <CheatsheetSidebar
+      v-if="!isRunningEmulation"
+      :open.sync="isCheatsheetSidebarOpen"
+      @open="showCheatsheetSidebar = true"
+      @close="showCheatsheetSidebar = false"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import CheatsheetSidebar from '@/components/assembler/modules/CheatsheetSidebar.vue';
 import ExamplesSidebar from '@/components/assembler/modules/ExamplesSidebar.vue';
 import { getAsm2010Instance } from '@/core/ts';
 import { CsPlatform, TCsAssemblyInstruction } from '@/core/ts/types';
@@ -185,6 +201,7 @@ import { mapActions, mapWritableState } from 'pinia';
 export default defineComponent({
   components: {
     ExamplesSidebar,
+    CheatsheetSidebar,
   },
   props: {
     isRunningEmulation: {
@@ -206,6 +223,7 @@ export default defineComponent({
     isAssembling: false,
     currentLogLineIndex: 0,
     showExamplesSidebar: false,
+    showCheatsheetSidebar: false,
     isLoading: false,
   }),
   computed: {
@@ -222,6 +240,9 @@ export default defineComponent({
     },
     isExamplesSidebarOpen(): boolean {
       return this.showExamplesSidebar && !this.isRunningEmulation;
+    },
+    isCheatsheetSidebarOpen(): boolean {
+      return this.showCheatsheetSidebar && !this.isRunningEmulation;
     },
     sourceAssemblyMetadata(): string[] {
       let currentAssembledInstructionIdx = 0;
