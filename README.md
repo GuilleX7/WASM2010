@@ -7,7 +7,7 @@ While the user interaction originates in a web application, its core is isolated
 written in C, thus allowing its reuse in web and desktop projects that wish to incorporate or extend its functionality.
 
 - Original CS2010 architecture (in Spanish): https://www.dte.us.es/docencia/etsii/gii-is/estructura-de-computadores/grupo-4-2018/CS2010-2013.pdf
-- Original ASM2010 repository (outdated): https://github.com/GuilleX7/ASM2010
+- Original ASM2010 repository: https://github.com/GuilleX7/ASM2010
 
 ## Documentation
 
