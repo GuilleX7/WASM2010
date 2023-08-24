@@ -9,6 +9,10 @@ written in C, thus allowing its reuse in web and desktop projects that wish to i
 - Original CS2010 architecture (in Spanish): https://www.dte.us.es/docencia/etsii/gii-is/estructura-de-computadores/grupo-4-2018/CS2010-2013.pdf
 - Original ASM2010 repository: https://github.com/GuilleX7/ASM2010
 
+## Live demo
+
+You can check a live demo [here](https://guillex7.github.io/wasm2010).
+
 ## Documentation
 
 This has been my Computer Engineering degree final project. The official documentation for this project is located at the ['docs' folder](https://github.com/GuilleX7/WASM2010/tree/master/docs).
