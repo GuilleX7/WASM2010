@@ -11,7 +11,7 @@
   "author": "GuilleX7",
   "license": "GNU GPL v3",
   "dependencies": {
-    "@guillex7/jasm": "^0.8.0",
+    "@guillex7/jasm": "^0.8.2",
     "buefy": "^0.9.23",
     "vue": "2.6.14",
     "vue-multipane": "^0.9.5"

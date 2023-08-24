@@ -3,9 +3,7 @@ project(WASM2010 LANGUAGES C)
 
 add_subdirectory("subprojects/ASM2010")
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/build)
+set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 set(CMAKE_SHARED_LIBRARY_PREFIX_C "")
 set(CMAKE_STATIC_LIBRARY_PREFIX_C "lib")
 
@@ -27,4 +25,4 @@ target_link_libraries(WASM2010 "-Wl,--whole-archive" libASM2010 "-Wl,--no-whole-
 target_link_options(WASM2010 PUBLIC "-Wl,--no-entry" "-nostartfiles" "-Wl,--export-dynamic" "-Wl,--export=malloc" "-Wl,--export=free" "-Wl,--import-undefined")
 set_target_properties(WASM2010 PROPERTIES SUFFIX ".wasm")
 
-install(TARGETS WASM2010 DESTINATION ${CMAKE_BINARY_DIR})
+install(TARGETS WASM2010 DESTINATION bin)

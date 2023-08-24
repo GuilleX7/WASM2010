@@ -5,7 +5,7 @@ import {
   TJasmObjectConstructor,
   TJasmObjectProxy,
 } from '@guillex7/jasm';
-import wasm2010 from '../wasm/build/WASM2010.wasm';
+import wasm2010 from '../wasm/bin/WASM2010.wasm';
 import { Asm2010IoManager, ICsIoHandler } from './io';
 import {
   CS_RAM_SIZE,
